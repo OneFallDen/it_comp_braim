@@ -68,7 +68,8 @@ class Locations(Base):
     __tablename__ = 'locations'
 
     id = Column(Integer, primary_key=True, index=True)
-    location = Column(String(255), nullable=False)
+    latitude = Column(DECIMAL, nullable=False)
+    longitude = Column(DECIMAL, nullable=False)
 
     visitedLocations = relationship('VisitedLocations', backref='locations')
 
