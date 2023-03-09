@@ -34,7 +34,7 @@ def get_animal(animal_id: int, db: Session):
     for res in result_locs:
         animal_locs.append(res.loc_id)
     for res in result_types:
-        animal_types.append(res.id)
+        animal_types.append(res.type_id)
     return {
         'id': animal_id,
         'animalsTypes': animal_types,
@@ -49,3 +49,8 @@ def get_animal(animal_id: int, db: Session):
         "visitedLocations": animal_locs,
         "deathDateTime": result[0].deathdatetime
     }
+
+
+def get_type(type_id: int, db: Session):
+    result = db.execute(select(models.Types).where(models.Types.id == type_id)).first()
+    return result[0]
