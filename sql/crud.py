@@ -54,3 +54,17 @@ def get_animal(animal_id: int, db: Session):
 def get_type(type_id: int, db: Session):
     result = db.execute(select(models.Types).where(models.Types.id == type_id)).first()
     return result[0]
+
+
+"""
+    ANIMAL
+"""
+
+
+def get_location(point_id: int, db: Session):
+    result = db.execute(select(models.Locations).where(models.Locations.id == point_id)).first()
+    return {
+        'id': result[0].id,
+        'latitude': result[0].latitude,
+        'longitude': result[0].longitude
+    }
