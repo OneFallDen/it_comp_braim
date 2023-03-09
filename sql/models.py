@@ -44,7 +44,16 @@ class AnimalTypes(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     animal_id = Column(Integer, ForeignKey('animal.id'), nullable=False)
+    type_id = Column(Integer, ForeignKey('types.id'), nullable=False)
+
+
+class Types(Base):
+    __tablename__ = 'types'
+
+    id = Column(Integer, primary_key=True, index=True)
     type = Column(String(255), nullable=False)
+
+    animalTypes = relationship('AnimalTypes', backref='types')
 
 
 class VisitedLocations(Base):
