@@ -1,5 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+from fastapi import HTTPException
 
 from sql import models
 from models import schemas
@@ -116,7 +117,7 @@ def get_type(type_id: int, db: Session):
 
 
 """
-    ANIMAL
+    Location
 """
 
 
@@ -127,3 +128,47 @@ def get_location(point_id: int, db: Session):
         'latitude': result[0].latitude,
         'longitude': result[0].longitude
     }
+
+
+def loc_search(animalId: int, startDateTime, endDateTime, froom, size, db: Session):
+    result = db.execute(select(models.VisitedLocations)).scalars().all()
+    locs = []
+    locs_to_send = []
+    to_remove = []
+    i = 0
+    j = 0
+    for res in result:
+        locs.append({
+            'id': res.id,
+            'dateTimeOfVisitLocationPoint': res.date_of_visit,
+            'locationPointId': res.loc_id
+        })
+    if startDateTime:
+        try:
+            for loc in locs:
+                if startDateTime > loc['dateTimeOfVisitLocationPoint']:
+                    to_remove.append(loc)
+            for tr in to_remove:
+                locs.remove(tr)
+            to_remove.clear()
+        except:
+            raise HTTPException(status_code=400)
+    if endDateTime:
+        try:
+            for loc in locs:
+                if endDateTime < loc['dateTimeOfVisitLocationPoint']:
+                    to_remove.append(loc)
+            for tr in to_remove:
+                locs.remove(tr)
+            to_remove.clear()
+        except:
+            raise HTTPException(status_code=400)
+    for loc in locs:
+        if j != froom:
+            j += 1
+        else:
+            if i == size:
+                break
+            locs_to_send.append(loc)
+            i += 1
+    return locs_to_send

@@ -61,6 +61,7 @@ class VisitedLocations(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     animal_id = Column(Integer, ForeignKey('animal.id'), nullable=False)
+    date_of_visit = Column(DateTime, default=datetime.now())
     loc_id = Column(Integer, ForeignKey('locations.id'), nullable=False)
 
 
