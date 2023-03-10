@@ -7,7 +7,7 @@ from datetime import datetime
 from sql.db import get_db
 from controllers.reg_controller import get_current_account
 from sql import models
-from controllers.location_controller import get_loc_info, search_loc, point_visit_add
+from controllers.location_controller import get_loc_info, search_loc, point_visit_add, point_visit_update
 
 
 router = routing.APIRouter()
@@ -18,6 +18,12 @@ async def location_search(animalId: int, startDateTime: Union[datetime, None] = 
 = None, froom: Union[int, None] = Query(default=0, alias="from"), size: Union[int, None] = 10,
                            db: Session = Depends(get_db)):
     return search_loc(animalId, startDateTime, endDateTime, froom, size, db)
+
+
+@router.put('/animals/{animalId}/locations', tags=['location'])
+async def visit_point_update(animalId: int, visitedLocationPointId: int, locationPointId: int, db: Session = Depends(get_db),
+                    user: models.Account = Depends(get_current_account)):
+    return point_visit_update(animalId, visitedLocationPointId, locationPointId, db)
 
 
 @router.post('/animals/{animalId}/locations/{pointId}', tags=['location'])

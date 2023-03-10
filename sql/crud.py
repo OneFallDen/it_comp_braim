@@ -229,12 +229,38 @@ def get_animal_status(animalId: int, db: Session):
 """
 
 
+def check_visited_point(animal_id: int, visited_id: int, db: Session):
+    result = db.execute(select(models.VisitedLocations).where(models.VisitedLocations.id == visited_id).
+                        where(models.VisitedLocations.animal_id == animal_id))
+    return 1
+
+
+def get_visited_location(visited_id: int, db: Session):
+    result = db.execute(select(models.VisitedLocations).where(models.VisitedLocations.id == visited_id)).first()
+    return result[0]
+
+
 def get_location(point_id: int, db: Session):
     result = db.execute(select(models.Locations).where(models.Locations.id == point_id)).first()
     return {
         'id': result[0].id,
         'latitude': result[0].latitude,
         'longitude': result[0].longitude
+    }
+
+
+def update_point_visit(animalId: int, visited_id: int, loc_id: int, db: Session):
+    db.query(models.VisitedLocations).filter(models.VisitedLocations.id == visited_id).update(
+        {
+            models.VisitedLocations.loc_id: loc_id
+        }
+    )
+    db.commit()
+    s = get_visited_location(visited_id, db)
+    return {
+        'id': visited_id,
+        'dateTimeOfVisitLocationPoint': s.date_of_visit,
+        'locationPointId': loc_id
     }
 
 
