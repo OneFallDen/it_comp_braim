@@ -20,6 +20,11 @@ def get_account(account_id: int, db: Session):
     }
 
 
+def get_user(username: str, db: Session):
+    result = db.execute(select(models.Account).where(models.Account.email == username)).first()
+    return result[0]
+
+
 def check_email(email: str, db: Session):
     result = db.execute(select(models.Account).where(models.Account.email == email)).first()
     return result[0].id
@@ -77,6 +82,25 @@ def search_account(firstname, lastname, email, froom, size, db: Session):
             accs_to_send.append(acc)
             i += 1
     return accs_to_send
+
+
+def acc_update(accountId: int, firstname: str, lastname: str, email: str, password: str, db: Session):
+    db.query(models.Account).filter(models.Account.id == accountId).update(
+        {
+            models.Account.firstname: firstname,
+            models.Account.lastname: lastname,
+            models.Account.email: email,
+            models.Account.password: password
+        }
+    )
+    db.commit()
+    return {
+        'id': accountId,
+        'firstName': firstname,
+        'lastName': lastname,
+        'email': email
+    }
+
 
 
 """

@@ -1,13 +1,22 @@
-from fastapi import routing, Depends, Query
+from fastapi import routing, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from typing import Union
 
 
 from sql.db import get_db
-from controllers.account_controller import get_acc_info, acc_search
+from sql import models
+from controllers.account_controller import get_acc_info, acc_search, update_acc
+from controllers.reg_controller import get_current_account
 
 
 router = routing.APIRouter()
+
+
+@router.put('/accounts/{accountId}', tags=['account'])
+async def update_account(accountId: int, firstname: str, lastname: str, email: str, password: str,
+                         db: Session = Depends(get_db),
+                         user: models.Account = Depends(get_current_account)):
+    return update_acc(accountId, firstname, lastname, email, password, db, user)
 
 
 @router.get('/accounts/search', tags=['account'])

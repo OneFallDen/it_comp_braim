@@ -1,10 +1,14 @@
+from fastapi.security import HTTPBasicCredentials
 from sqlalchemy.orm import Session
-from fastapi import HTTPException
+from fastapi import HTTPException, Depends
 import re
+from typing import Union
 
 pattern = r"^[-\w\.]+@([-\w]+\.)+[-\w]{2,4}$"
-from sql.crud import check_email, signup_user
-from auth.auth import encode_password
+from sql.crud import check_email, signup_user, get_user
+from auth.auth import encode_password, verify_password
+from sql.db import get_db
+from auth.auth import security
 
 
 def reg_user(firstname: str, lastname: str, email: str, password: str, db: Session):
@@ -43,14 +47,12 @@ def reg_user(firstname: str, lastname: str, email: str, password: str, db: Sessi
     }
 
 
-"""
 async def get_current_account(db: Session = Depends(get_db),
-    credentials: HTTPBasicCredentials | None = Depends(security),
-) -> schemas.Account | None:
+                              credentials: Union[HTTPBasicCredentials, None] = Depends(security),
+                              ):
     if not credentials:
         return None
-    user = get_user(db, credentials.username)
+    user = get_user(credentials.username, db)
     if not user or not verify_password(credentials.password, user.password):  # type: ignore
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-    return validate_account(user)
-"""
+        raise HTTPException(status_code=401)
+    return user

@@ -5,6 +5,8 @@ from datetime import datetime
 
 
 from sql.db import get_db
+from controllers.reg_controller import get_current_account
+from sql import models
 from controllers.location_controller import get_loc_info, search_loc
 
 
