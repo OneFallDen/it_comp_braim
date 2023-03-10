@@ -3,7 +3,7 @@ from fastapi import HTTPException
 from datetime import datetime
 
 from sql.crud import get_location, get_animal, loc_search, get_animal_status, last_visit_point, add_visit_point,\
-    get_visited_location, check_visited_point, update_point_visit
+    get_visited_location, check_visited_point, update_point_visit, delete_visited_point
 
 
 def point_visit_add(animalId: int, pointId: int, db: Session):
@@ -32,6 +32,32 @@ def point_visit_add(animalId: int, pointId: int, db: Session):
     if s.loc_id == pointId:
         raise HTTPException(status_code=400)
     return add_visit_point(animalId, pointId, db)
+
+
+def visited_point_delete(animalId: int, visitedPointId: int, db: Session):
+    if not animalId:
+        raise HTTPException(status_code=400)
+    if animalId <= 0:
+        raise HTTPException(status_code=400)
+    if not visitedPointId:
+        raise HTTPException(status_code=400)
+    if visitedPointId <= 0:
+        raise HTTPException(status_code=400)
+    try:
+        animal = get_animal(animalId, db)
+    except:
+        raise HTTPException(status_code=404)
+    try:
+        get_visited_location(visitedPointId, db)
+    except:
+        raise HTTPException(status_code=404)
+    try:
+        s = check_visited_point(animalId, visitedPointId, db)
+        if not s:
+            raise HTTPException(status_code=404)
+    except:
+        raise HTTPException(status_code=404)
+    return delete_visited_point(animalId, visitedPointId, db)
 
 
 def point_visit_update(animalId: int, visitedLocationPointId: int, locationPointId: int, db: Session):

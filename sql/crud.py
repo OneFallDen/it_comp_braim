@@ -231,8 +231,8 @@ def get_animal_status(animalId: int, db: Session):
 
 def check_visited_point(animal_id: int, visited_id: int, db: Session):
     result = db.execute(select(models.VisitedLocations).where(models.VisitedLocations.id == visited_id).
-                        where(models.VisitedLocations.animal_id == animal_id))
-    return 1
+                        where(models.VisitedLocations.animal_id == animal_id)).first()
+    return result[0]
 
 
 def get_visited_location(visited_id: int, db: Session):
@@ -247,6 +247,11 @@ def get_location(point_id: int, db: Session):
         'latitude': result[0].latitude,
         'longitude': result[0].longitude
     }
+
+
+def delete_visited_point(animalId: int, visitedPointId: int, db: Session):
+    db.query(models.VisitedLocations).filter(models.VisitedLocations.id == visitedPointId).delete()
+    db.commit()
 
 
 def update_point_visit(animalId: int, visited_id: int, loc_id: int, db: Session):
