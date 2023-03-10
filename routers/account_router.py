@@ -13,10 +13,10 @@ router = routing.APIRouter()
 
 
 @router.put('/accounts/{accountId}', tags=['account'])
-async def update_account(accountId: int, firstname: str, lastname: str, email: str, password: str,
+async def update_account(accountId: int, firstName: str, lastName: str, email: str, password: str,
                          db: Session = Depends(get_db),
                          user: models.Account = Depends(get_current_account)):
-    return update_acc(accountId, firstname, lastname, email, password, db, user)
+    return update_acc(accountId, firstName, lastName, email, password, db, user)
 
 
 @router.delete('/accounts/{accountId}', tags=['account'])
