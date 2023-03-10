@@ -19,6 +19,24 @@ def get_account(account_id: int, db: Session):
     }
 
 
+def check_email(email: str, db: Session):
+    result = db.execute(select(models.Account).where(models.Account.email == email)).first()
+    return result[0].id
+
+
+def signup_user(firstname: str, lastname: str, email: str, password: str, db: Session):
+    db_user = models.Account(
+        firstname=firstname,
+        lastname=lastname,
+        email=email,
+        password=password
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user.id
+
+
 """
     ANIMAL
 """
