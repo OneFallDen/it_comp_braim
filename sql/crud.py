@@ -116,6 +116,74 @@ def get_type(type_id: int, db: Session):
     return result[0]
 
 
+def anim_search(startDateTime, endDateTime, chipperId, chippingLocationId, lifeStatus, gender, froom, size, db: Session):
+    result = db.execute(select(models.Animal)).scalars().all()
+    anims = []
+    anims_to_send = []
+    to_remove = []
+    i = 0
+    j = 0
+    for res in result:
+        anims.append(get_animal(res.id, db))
+    if startDateTime:
+        try:
+            for anim in anims:
+                if startDateTime > anim['chippingDateTime']:
+                    to_remove.append(anim)
+            for tr in to_remove:
+                anims.remove(tr)
+            to_remove.clear()
+        except:
+            raise HTTPException(status_code=400)
+    if endDateTime:
+        try:
+            for anim in anims:
+                if endDateTime < anim['chippingDateTime']:
+                    to_remove.append(anim)
+            for tr in to_remove:
+                anims.remove(tr)
+            to_remove.clear()
+        except:
+            raise HTTPException(status_code=400)
+    if chipperId:
+        for anim in anims:
+            if chipperId != anim['chipperId']:
+                to_remove.append(anim)
+        for tr in to_remove:
+            anims.remove(tr)
+        to_remove.clear()
+    if chippingLocationId:
+        for anim in anims:
+            if not (chippingLocationId == anim['chippingLocationId']):
+                to_remove.append(anim)
+        for tr in to_remove:
+            anims.remove(tr)
+        to_remove.clear()
+    if lifeStatus:
+        for anim in anims:
+            if lifeStatus != anim['lifeStatus']:
+                to_remove.append(anim)
+        for tr in to_remove:
+            anims.remove(tr)
+        to_remove.clear()
+    if gender:
+        for anim in anims:
+            if gender != anim['gender']:
+                to_remove.append(anim)
+        for tr in to_remove:
+            anims.remove(tr)
+        to_remove.clear()
+    for anim in anims:
+        if j != froom:
+            j += 1
+        else:
+            if i == size:
+                break
+            anims_to_send.append(anim)
+            i += 1
+    return anims_to_send
+
+
 """
     Location
 """
