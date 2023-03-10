@@ -5,7 +5,7 @@ from typing import Union
 
 from sql.db import get_db
 from sql import models
-from controllers.account_controller import get_acc_info, acc_search, update_acc
+from controllers.account_controller import get_acc_info, acc_search, update_acc, delete_acc
 from controllers.reg_controller import get_current_account
 
 
@@ -17,6 +17,13 @@ async def update_account(accountId: int, firstname: str, lastname: str, email: s
                          db: Session = Depends(get_db),
                          user: models.Account = Depends(get_current_account)):
     return update_acc(accountId, firstname, lastname, email, password, db, user)
+
+
+@router.delete('/accounts/{accountId}', tags=['account'])
+async def delete_account(accountId: int,
+                         db: Session = Depends(get_db),
+                         user: models.Account = Depends(get_current_account)):
+    return delete_acc(accountId, db, user)
 
 
 @router.get('/accounts/search', tags=['account'])

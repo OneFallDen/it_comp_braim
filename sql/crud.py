@@ -102,6 +102,15 @@ def acc_update(accountId: int, firstname: str, lastname: str, email: str, passwo
     }
 
 
+def get_account_animal(accountId: int, db: Session):
+    result = db.execute(select(models.Animal).where(models.Animal.chipperid == accountId)).first()
+    return result[0]
+
+
+def acc_delete(accountId: int, db: Session):
+    db.query(models.Account).filter(models.Account.id == accountId).delete()
+    db.commit()
+
 
 """
     ANIMAL
