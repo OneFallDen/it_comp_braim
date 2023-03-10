@@ -37,6 +37,47 @@ def signup_user(firstname: str, lastname: str, email: str, password: str, db: Se
     return db_user.id
 
 
+def search_account(firstname, lastname, email, froom, size, db: Session):
+    result = db.execute(select(models.Account)).scalars().all()
+    accs = []
+    accs_to_send = []
+    to_remove = []
+    i = 0
+    j = 0
+    if firstname:
+        for res in result:
+            if firstname in res.firstname:
+                accs.append({
+                    'id': res.id,
+                    'firstName': res.firstname,
+                    'lastName': res.lastname,
+                    'email': res.email
+                })
+    if lastname:
+        for acc in accs:
+            if not (lastname in acc['lastName']):
+                to_remove.append(acc)
+        for tr in to_remove:
+            accs.remove(tr)
+        to_remove.clear()
+    if email:
+        for acc in accs:
+            if not (email in acc['email']):
+                to_remove.append(acc)
+        for tr in to_remove:
+            accs.remove(tr)
+        to_remove.clear()
+    for acc in accs:
+        if j != froom:
+            j += 1
+        else:
+            if i == size:
+                break
+            accs_to_send.append(acc)
+            i += 1
+    return accs_to_send
+
+
 """
     ANIMAL
 """
