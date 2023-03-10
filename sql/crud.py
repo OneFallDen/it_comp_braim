@@ -1,3 +1,5 @@
+import datetime
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
@@ -217,6 +219,11 @@ def anim_search(startDateTime, endDateTime, chipperId, chippingLocationId, lifeS
     return anims_to_send
 
 
+def get_animal_status(animalId: int, db: Session):
+    result = db.execute(select(models.Animal).where(models.Animal.id == animalId)).first()
+    return result[0].lifestatus
+
+
 """
     Location
 """
@@ -229,6 +236,31 @@ def get_location(point_id: int, db: Session):
         'latitude': result[0].latitude,
         'longitude': result[0].longitude
     }
+
+
+def add_visit_point(animalId: int, pointId: int, db: Session):
+    date = datetime.datetime.now()
+    db_user = models.VisitedLocations(
+        animal_id=animalId,
+        date_of_visit=date,
+        loc_id=pointId
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return {
+        'id': db_user.id,
+        'dateTimeOfVisitLocationPoint': date,
+        'locationPointId': pointId
+    }
+
+
+def last_visit_point(animalId: int, db: Session):
+    result = db.execute(select(models.VisitedLocations).where(models.VisitedLocations.animal_id == animalId)).scalars().all()
+    s = 0
+    for res in result:
+        s = res
+    return s
 
 
 def loc_search(animalId: int, startDateTime, endDateTime, froom, size, db: Session):
