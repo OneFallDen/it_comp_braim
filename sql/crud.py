@@ -229,6 +229,21 @@ def get_animal_status(animalId: int, db: Session):
 """
 
 
+def update_loc(pointId: int, latitude: float, longitude: float, db: Session):
+    db.query(models.Locations).filter(models.Locations.id == pointId).update(
+        {
+            models.Locations.latitude: latitude,
+            models.Locations.longitude: longitude
+        }
+    )
+    db.commit()
+    return {
+        'id': pointId,
+        'latitude': latitude,
+        'longitude': longitude
+    }
+
+
 def add_loc(latitude: float, longitude: float, db: Session):
     db_user = models.Locations(
         latitude=latitude,
