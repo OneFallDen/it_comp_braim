@@ -30,3 +30,8 @@ class UpdateAnimal(BaseModel):
     lifeStatus: str
     chipperId: int
     chippingLocationId: int
+
+
+class UpdateAnimalTypes(BaseModel):
+    oldTypeId: int
+    newTypeId: int

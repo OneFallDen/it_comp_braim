@@ -172,6 +172,15 @@ def add_anim(animalTypes: [], weight: float, length: float, height: float, gende
     }
 
 
+def update_anim_types(animalId: int, oldTypeId: int, newTypeId: int, db: Session):
+    db.query(models.AnimalTypes).filter(models.AnimalTypes.animal_id == animalId).filter(models.AnimalTypes.type_id == oldTypeId).update(
+        {
+            models.AnimalTypes.type_id: newTypeId
+        }
+    )
+    db.commit()
+
+
 def add_anim_type(animalId: int, typeId: int, db: Session):
     db_user = models.AnimalTypes(
         animal_id=animalId,
