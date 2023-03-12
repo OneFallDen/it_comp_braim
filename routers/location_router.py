@@ -8,7 +8,7 @@ from sql.db import get_db
 from controllers.reg_controller import get_current_account
 from sql import models
 from controllers.location_controller import get_loc_info, search_loc, point_visit_add, point_visit_update, \
-    visited_point_delete, location_add, location_update
+    visited_point_delete, location_add, location_update, location_delete
 
 
 router = routing.APIRouter()
@@ -50,7 +50,13 @@ async def add_location(latitude: float, longitude: float, user: models.Account =
     return location_add(latitude, longitude, user, db)
 
 
-@router.put('/locations/{pointId}', tags=['location'], status_code=201)
+@router.delete('/locations/{pointId}', tags=['location'])
+async def delete_location(pointId: int, user: models.Account = Depends(get_current_account),
+                       db: Session = Depends(get_db)):
+    return location_delete(pointId, user, db)
+
+
+@router.put('/locations/{pointId}', tags=['location'])
 async def update_location(pointId: int, latitude: float, longitude: float,
                        user: models.Account = Depends(get_current_account), db: Session = Depends(get_db)):
     return location_update(pointId, latitude, longitude, user, db)

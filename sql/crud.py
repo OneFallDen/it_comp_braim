@@ -229,6 +229,16 @@ def get_animal_status(animalId: int, db: Session):
 """
 
 
+def delete_loc(pointId: int, db: Session):
+    db.query(models.Locations).filter(models.Locations.id == pointId).delete()
+    db.commit()
+
+
+def check_loc_animal(pointId: int, db: Session):
+    result = db.execute(select(models.VisitedLocations).where(models.VisitedLocations.loc_id == pointId)).first()
+    return result[0]
+
+
 def update_loc(pointId: int, latitude: float, longitude: float, db: Session):
     db.query(models.Locations).filter(models.Locations.id == pointId).update(
         {
