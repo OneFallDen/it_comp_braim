@@ -172,6 +172,11 @@ def add_anim(animalTypes: [], weight: float, length: float, height: float, gende
     }
 
 
+def type_from_anim_delete(animalId: int, typeId: int, db: Session):
+    db.query(models.AnimalTypes).filter(models.AnimalTypes.animal_id == animalId).filter(models.AnimalTypes.type_id == typeId).delete()
+    db.commit()
+
+
 def update_anim_types(animalId: int, oldTypeId: int, newTypeId: int, db: Session):
     db.query(models.AnimalTypes).filter(models.AnimalTypes.animal_id == animalId).filter(models.AnimalTypes.type_id == oldTypeId).update(
         {
