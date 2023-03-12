@@ -172,6 +172,21 @@ def add_anim(animalTypes: [], weight: float, length: float, height: float, gende
     }
 
 
+def add_anim_type(animalId: int, typeId: int, db: Session):
+    db_user = models.AnimalTypes(
+        animal_id=animalId,
+        type_id=typeId
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+
+
+def check_exsists_type_animal(animalId: int, typeId: int, db: Session):
+    result = db.execute(select(models.AnimalTypes).where(models.AnimalTypes.type_id == typeId).where(models.AnimalTypes.animal_id == animalId)).first()
+    return result[0]
+
+
 def check_animal_type(typeId: int, db: Session):
     result = db.execute(select(models.AnimalTypes).where(models.AnimalTypes.type_id == typeId)).first()
     return result[0]
