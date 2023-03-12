@@ -119,6 +119,51 @@ def acc_delete(accountId: int, db: Session):
 """
 
 
+def add_type_to_anim(animalType: int, animalId: int, db: Session):
+    db_user = models.AnimalTypes(
+        animal_id=animalId,
+        type_id=animalType
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return 1
+
+
+def add_anim(animalTypes: [], weight: float, length: float, height: float, gender: str, chipperId: int,
+               chippingLocationId: int, db: Session):
+    date = datetime.datetime.now()
+    db_user = models.Animal(
+        weight=weight,
+        length=length,
+        height=height,
+        gender=gender,
+        chipperid=chipperId,
+        chippinglocationid=chippingLocationId,
+        lifestatus='ALIVE',
+        chippingdatetime=date
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    for at in animalTypes:
+        add_type_to_anim(at, db_user.id, db)
+    return {
+        'id': db_user.id,
+        'animalTypes': animalTypes,
+        'weight': weight,
+        'length': length,
+        'height': height,
+        'gender': gender,
+        'lifeStatus': 'ALIVE',
+        'chippingDateTime': date,
+        'chipperId': chipperId,
+        'chippingLocationId': chippingLocationId,
+        'visitedLocations': [],
+        'deathDateTime': None
+    }
+
+
 def check_animal_type(typeId: int, db: Session):
     result = db.execute(select(models.AnimalTypes).where(models.AnimalTypes.type_id == typeId)).first()
     return result[0]
