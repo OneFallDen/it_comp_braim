@@ -6,7 +6,7 @@ from datetime import datetime
 
 from sql.db import get_db
 from controllers.animal_controller import get_anim_info, get_info_type, search_anim, animal_type_add, animal_type_update\
-    , animal_type_delete, animal_add
+    , animal_type_delete, animal_add, animal_update
 from sql import models
 from controllers.reg_controller import get_current_account
 from models import schemas
@@ -23,21 +23,21 @@ froom: Union[int, None] = Query(default=0, alias="from"), size: Union[int, None]
     return search_anim(startDateTime, endDateTime, chipperId, chippingLocationId, lifeStatus, gender, froom, size, db)
 
 
-@router.get('/animal/{animalId}', tags=['animal'])
+@router.get('/animals/{animalId}', tags=['animal'])
 async def get_animal_info(animalId: int, db: Session = Depends(get_db)):
     return get_anim_info(animalId, db)
 
 
-@router.post('/animal', tags=['animal'], status_code=201)
+@router.post('/animals', tags=['animal'], status_code=201)
 async def add_animal(animal: schemas.NewAnimal, user: models.Account = Depends(get_current_account),
                      db: Session = Depends(get_db)):
     return animal_add(animal.animalTypes, animal.weight, animal.length, animal.height, animal.gender, animal.chipperId, animal.chippingLocationId, user, db)
 
 
-@router.put('/animal', tags=['animal'])
-async def update_animal(animal: schemas.UpdateAnimal, user: models.Account = Depends(get_current_account),
+@router.put('/animals/{animalId}', tags=['animal'])
+async def update_animal(animalId: int, animal: schemas.UpdateAnimal, user: models.Account = Depends(get_current_account),
                      db: Session = Depends(get_db)):
-    return animal_add(animal.weight, animal.length, animal.height, animal.gender, animal.chipperId, animal.chippingLocationId, user, db)
+    return animal_update(animalId, animal.weight, animal.length, animal.height, animal.gender, animal.lifeStatus, animal.chipperId, animal.chippingLocationId, user, db)
 
 
 @router.get('/animals/types/{typeId}', tags=['animal_type'])

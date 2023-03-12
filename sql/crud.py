@@ -310,6 +310,22 @@ def get_animal_status(animalId: int, db: Session):
     return result[0].lifestatus
 
 
+def update_anim(animalId: int, weight: float, length: float, height: float, gender: str, lifeStatus: str, chipperId: int,
+               chippingLocationId: int, db: Session):
+    db.query(models.Animal).filter(models.Animal.id == animalId).update(
+        {
+            models.Animal.chipperid: chipperId,
+            models.Animal.height: height,
+            models.Animal.length: length,
+            models.Animal.weight: weight,
+            models.Animal.gender: gender,
+            models.Animal.lifestatus: lifeStatus,
+            models.Animal.chippinglocationid: chippingLocationId
+        }
+    )
+    db.commit()
+    return get_animal(animalId, db)
+
 """
     Location
 """
