@@ -4,6 +4,7 @@ from typing import Union
 from datetime import datetime
 
 
+from models import schemas
 from sql.db import get_db
 from controllers.reg_controller import get_current_account
 from sql import models
@@ -22,9 +23,9 @@ async def location_search(animalId: int, startDateTime: Union[datetime, None] = 
 
 
 @router.put('/animals/{animalId}/locations', tags=['location'])
-async def visit_point_update(animalId: int, visitedLocationPointId: int, locationPointId: int, db: Session = Depends(get_db),
+async def visit_point_update(animalId: int, location: schemas.UpdatePoint, db: Session = Depends(get_db),
                     user: models.Account = Depends(get_current_account)):
-    return point_visit_update(animalId, visitedLocationPointId, locationPointId, db)
+    return point_visit_update(animalId, location.visitedLocationPointId, location.locationPointId, db)
 
 
 @router.delete('/animals/{animalId}/locations/{visitedPointId}', tags=['location'])
@@ -45,9 +46,9 @@ async def get_location_info(pointId: int, db: Session = Depends(get_db)):
 
 
 @router.post('/locations', tags=['location'], status_code=201)
-async def add_location(latitude: float, longitude: float, user: models.Account = Depends(get_current_account),
+async def add_location(location: schemas.Location, user: models.Account = Depends(get_current_account),
                        db: Session = Depends(get_db)):
-    return location_add(latitude, longitude, user, db)
+    return location_add(location.latitude, location.longitude, user, db)
 
 
 @router.delete('/locations/{pointId}', tags=['location'])
@@ -57,6 +58,6 @@ async def delete_location(pointId: int, user: models.Account = Depends(get_curre
 
 
 @router.put('/locations/{pointId}', tags=['location'])
-async def update_location(pointId: int, latitude: float, longitude: float,
+async def update_location(pointId: int, location: schemas.Location,
                        user: models.Account = Depends(get_current_account), db: Session = Depends(get_db)):
-    return location_update(pointId, latitude, longitude, user, db)
+    return location_update(pointId, location.latitude, location.longitude, user, db)

@@ -7,16 +7,17 @@ from sql.db import get_db
 from sql import models
 from controllers.account_controller import get_acc_info, acc_search, update_acc, delete_acc
 from controllers.reg_controller import get_current_account
+from models import schemas
 
 
 router = routing.APIRouter()
 
 
 @router.put('/accounts/{accountId}', tags=['account'])
-async def update_account(accountId: int, firstName: str, lastName: str, email: str, password: str,
+async def update_account(accountId: int, account: schemas.AccountReg,
                          db: Session = Depends(get_db),
                          user: models.Account = Depends(get_current_account)):
-    return update_acc(accountId, firstName, lastName, email, password, db, user)
+    return update_acc(accountId, account.firstName, account.lastName, account.email, account.password, db, user)
 
 
 @router.delete('/accounts/{accountId}', tags=['account'])

@@ -12,6 +12,27 @@ class Account(BaseModel):
     email: EmailStr
 
 
+class UpdatePoint(BaseModel):
+    visitedLocationPointId: int
+    locationPointId: int
+
+
+class AddType(BaseModel):
+    type: str
+
+
+class Location(BaseModel):
+    latitude: float
+    longitude: float
+
+
+class AccountReg(BaseModel):
+    firstName: str
+    lastName: str
+    email: str
+    password: str
+
+
 class NewAnimal(BaseModel):
     animalTypes: List[int]
     weight: float

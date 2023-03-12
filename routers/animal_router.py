@@ -58,8 +58,8 @@ async def get_type_info(typeId: int, db: Session = Depends(get_db)):
 
 
 @router.post('/animals/types', tags=['animal_type'], status_code=201)
-async def add_animal_type(type: str, user: models.Account = Depends(get_current_account), db: Session = Depends(get_db)):
-    return animal_type_add(type, user, db)
+async def add_animal_type(type: schemas.AddType, user: models.Account = Depends(get_current_account), db: Session = Depends(get_db)):
+    return animal_type_add(type.type, user, db)
 
 
 @router.put('/animals/{animalId}/types', tags=['animal_type'])
@@ -73,9 +73,9 @@ async def delete_type_from_animal(animalId: int, typeId: int, user: models.Accou
 
 
 @router.put('/animals/types/{typeId}', tags=['animal_type'])
-async def update_animal_type(typeId: int, type: str, user: models.Account = Depends(get_current_account),
+async def update_animal_type(typeId: int, type: schemas.AddType, user: models.Account = Depends(get_current_account),
                           db: Session = Depends(get_db)):
-    return animal_type_update(typeId, type, user, db)
+    return animal_type_update(typeId, type.type, user, db)
 
 
 @router.delete('/animals/types/{typeId}', tags=['animal_type'])
