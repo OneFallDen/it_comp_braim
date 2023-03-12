@@ -119,6 +119,16 @@ def acc_delete(accountId: int, db: Session):
 """
 
 
+def check_animal_type(typeId: int, db: Session):
+    result = db.execute(select(models.AnimalTypes).where(models.AnimalTypes.type_id == typeId)).first()
+    return result[0]
+
+
+def delete_type(typeId: int, db: Session):
+    db.query(models.Types).filter(models.Types.id == typeId).delete()
+    db.commit()
+
+
 def type_update(typeId: int, type: str, db: Session):
     db.query(models.Types).filter(models.Types.id == typeId).update(
         {
