@@ -8,7 +8,7 @@ from sql.db import get_db
 from controllers.reg_controller import get_current_account
 from sql import models
 from controllers.location_controller import get_loc_info, search_loc, point_visit_add, point_visit_update, \
-    visited_point_delete
+    visited_point_delete, location_add
 
 
 router = routing.APIRouter()
@@ -42,3 +42,8 @@ async def visit_point_add(animalId: int, pointId: int, db: Session = Depends(get
 @router.get('/locations/{pointId}', tags=['location'])
 async def get_location_info(pointId: int, db: Session = Depends(get_db)):
     return get_loc_info(pointId, db)
+
+
+@router.post('/locations', tags=['location'], status_code=201)
+async def add_location(latitude: float, longitude: float, user: models.Account = Depends(get_current_account), db: Session = Depends(get_db)):
+    return location_add(latitude, longitude, user, db)

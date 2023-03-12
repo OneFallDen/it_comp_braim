@@ -229,6 +229,27 @@ def get_animal_status(animalId: int, db: Session):
 """
 
 
+def add_loc(latitude: float, longitude: float, db: Session):
+    db_user = models.Locations(
+        latitude=latitude,
+        longitude=longitude
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return {
+        'id': db_user.id,
+        'latitude': latitude,
+        'longitude': longitude
+    }
+
+
+def check_location(latitude: float, longitude: float, db: Session):
+    result = db.execute(select(models.Locations).where(models.Locations.longitude == longitude)
+                        .where(models.Locations.latitude == latitude)).first()
+    return result[0]
+
+
 def check_visited_point(animal_id: int, visited_id: int, db: Session):
     result = db.execute(select(models.VisitedLocations).where(models.VisitedLocations.id == visited_id).
                         where(models.VisitedLocations.animal_id == animal_id)).first()

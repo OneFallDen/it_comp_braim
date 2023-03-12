@@ -3,7 +3,33 @@ from fastapi import HTTPException
 from datetime import datetime
 
 from sql.crud import get_location, get_animal, loc_search, get_animal_status, last_visit_point, add_visit_point,\
-    get_visited_location, check_visited_point, update_point_visit, delete_visited_point
+    get_visited_location, check_visited_point, update_point_visit, delete_visited_point, check_location, add_loc
+from sql import models
+
+
+def location_add(latitude: float, longitude: float, user: models.Account, db: Session):
+    if not latitude:
+        raise HTTPException(status_code=400)
+    if latitude < -90:
+        raise HTTPException(status_code=400)
+    if latitude > 90:
+        raise HTTPException(status_code=400)
+    if not longitude:
+        raise HTTPException(status_code=400)
+    if longitude < -180:
+        raise HTTPException(status_code=400)
+    if longitude > 180:
+        raise HTTPException(status_code=400)
+    s = 0
+    try:
+        res = check_location(latitude, longitude, db)
+        if res:
+            s = 1
+    except:
+        pass
+    if s > 0:
+        raise HTTPException(status_code=409)
+    return add_loc(latitude, longitude, db)
 
 
 def point_visit_add(animalId: int, pointId: int, db: Session):
