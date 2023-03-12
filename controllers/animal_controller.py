@@ -1,8 +1,24 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
-from sql.crud import get_animal, get_type, anim_search, check_type, add_type
+from sql.crud import get_animal, get_type, anim_search, check_type, add_type, type_update
 from sql import models
+
+
+def animal_type_update(typeId: int, type: str, user: models.Account, db: Session):
+    if not type:
+        raise HTTPException(status_code=400)
+    if type.replace(' ', '') == '':
+        raise HTTPException(status_code=400)
+    if not typeId:
+        raise HTTPException(status_code=400)
+    if typeId <= 0:
+        raise HTTPException(status_code=400)
+    try:
+        get_type(typeId, db)
+    except:
+        raise HTTPException(status_code=404)
+    return type_update(typeId, type, db)
 
 
 def animal_type_add(type: str, user: models.Account, db: Session):

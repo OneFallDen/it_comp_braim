@@ -119,6 +119,19 @@ def acc_delete(accountId: int, db: Session):
 """
 
 
+def type_update(typeId: int, type: str, db: Session):
+    db.query(models.Types).filter(models.Types.id == typeId).update(
+        {
+            models.Types.type: type
+        }
+    )
+    db.commit()
+    return {
+        'id': typeId,
+        'type': type
+    }
+
+
 def add_type(type: str, db: Session):
     db_user = models.Types(
         type=type
