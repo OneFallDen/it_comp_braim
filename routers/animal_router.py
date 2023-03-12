@@ -5,7 +5,9 @@ from datetime import datetime
 
 
 from sql.db import get_db
-from controllers.animal_controller import get_anim_info, get_info_type, search_anim
+from controllers.animal_controller import get_anim_info, get_info_type, search_anim, animal_type_add
+from sql import models
+from controllers.reg_controller import get_current_account
 
 
 router = routing.APIRouter()
@@ -24,6 +26,11 @@ async def get_animal_info(animalId: int, db: Session = Depends(get_db)):
     return get_anim_info(animalId, db)
 
 
-@router.get('/animals/types/{typeId}', tags=['animal'])
+@router.get('/animals/types/{typeId}', tags=['animal_type'])
 async def get_type_info(typeId: int, db: Session = Depends(get_db)):
     return get_info_type(typeId, db)
+
+
+@router.post('/animals/type', tags=['animal_type'], status_code=201)
+async def add_animal_type(type: str, user: models.Account = Depends(get_current_account), db: Session = Depends(get_db)):
+    return animal_type_add(type, user, db)
