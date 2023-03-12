@@ -6,7 +6,7 @@ from datetime import datetime
 
 from sql.db import get_db
 from controllers.animal_controller import get_anim_info, get_info_type, search_anim, animal_type_add, animal_type_update\
-    , animal_type_delete, animal_add, animal_update
+    , animal_type_delete, animal_add, animal_update, animal_delete
 from sql import models
 from controllers.reg_controller import get_current_account
 from models import schemas
@@ -38,6 +38,12 @@ async def add_animal(animal: schemas.NewAnimal, user: models.Account = Depends(g
 async def update_animal(animalId: int, animal: schemas.UpdateAnimal, user: models.Account = Depends(get_current_account),
                      db: Session = Depends(get_db)):
     return animal_update(animalId, animal.weight, animal.length, animal.height, animal.gender, animal.lifeStatus, animal.chipperId, animal.chippingLocationId, user, db)
+
+
+@router.delete('/animals/{animalId}', tags=['animal'])
+async def delete_animal(animalId: int, user: models.Account = Depends(get_current_account),
+                     db: Session = Depends(get_db)):
+    return animal_delete(animalId, user, db)
 
 
 @router.get('/animals/types/{typeId}', tags=['animal_type'])

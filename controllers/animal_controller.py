@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
 from sql.crud import get_animal, get_type, anim_search, check_type, add_type, type_update, delete_type, \
-    check_animal_type, get_account, get_location, add_anim, get_animal_status, update_anim
+    check_animal_type, get_account, get_location, add_anim, get_animal_status, update_anim, last_visit_point, delete_anim
 from sql import models
 
 
@@ -52,6 +52,17 @@ def valid_location(a: int, db):
         get_location(a, db)
     except:
         raise HTTPException(status_code=404)
+
+
+def animal_delete(animalId: int, user: models.Account,
+                     db: Session):
+    valid_integers(animalId)
+    valid_animal(animalId, db)
+    animal = get_animal(animalId, db)
+    last_point = last_visit_point(animalId, db)
+    if last_point.loc_id != animal['chippingLocationId']:
+        raise HTTPException(status_code=400)
+    delete_anim(animalId, db)
 
 
 def animal_update(animalId: int, weight: float, length: float, height: float, gender: str, lifeStatus: str, chipperId: int,

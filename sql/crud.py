@@ -146,6 +146,14 @@ def add_anim(animalTypes: [], weight: float, length: float, height: float, gende
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+    db_loc = models.VisitedLocations(
+        animal_id=db_user.id,
+        loc_id=chippingLocationId,
+        date_of_visit=date
+    )
+    db.add(db_loc)
+    db.commit()
+    db.refresh(db_loc)
     for at in animalTypes:
         add_type_to_anim(at, db_user.id, db)
     return {
@@ -325,6 +333,12 @@ def update_anim(animalId: int, weight: float, length: float, height: float, gend
     )
     db.commit()
     return get_animal(animalId, db)
+
+
+def delete_anim(animalId: int, db: Session):
+    db.query(models.Animal).filter(models.Animal.id == animalId).delete()
+    db.commit()
+
 
 """
     Location
