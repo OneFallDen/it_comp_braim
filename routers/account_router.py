@@ -17,6 +17,10 @@ router = routing.APIRouter()
 async def update_account(accountId: int, account: schemas.AccountReg,
                          db: Session = Depends(get_db),
                          user: models.Account = Depends(get_current_account)):
+    if not account:
+        raise HTTPException(status_code=401)
+    if accountId != user.id:
+        raise HTTPException(status_code=403)
     return update_acc(accountId, account.firstName, account.lastName, account.email, account.password, db, user)
 
 
@@ -24,6 +28,8 @@ async def update_account(accountId: int, account: schemas.AccountReg,
 async def delete_account(accountId: int,
                          db: Session = Depends(get_db),
                          user: models.Account = Depends(get_current_account)):
+    if accountId != user.id:
+        raise HTTPException(status_code=403)
     return delete_acc(accountId, db, user)
 
 

@@ -1,4 +1,4 @@
-from fastapi import routing, Depends, Query
+from fastapi import routing, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from typing import Union
 from datetime import datetime
@@ -25,35 +25,45 @@ async def location_search(animalId: int, startDateTime: Union[datetime, None] = 
 @router.put('/animals/{animalId}/locations', tags=['location'])
 async def visit_point_update(animalId: int, location: schemas.UpdatePoint, db: Session = Depends(get_db),
                     user: models.Account = Depends(get_current_account)):
+    if not user:
+        raise HTTPException(status_code=401)
     return point_visit_update(animalId, location.visitedLocationPointId, location.locationPointId, db)
 
 
 @router.delete('/animals/{animalId}/locations/{visitedPointId}', tags=['location'])
 async def delete_visited_point(animalId: int, visitedPointId: int, db: Session = Depends(get_db),
                                user: models.Account = Depends(get_current_account)):
+    if not user:
+        raise HTTPException(status_code=401)
     return visited_point_delete(animalId, visitedPointId, db)
 
 
 @router.post('/animals/{animalId}/locations/{pointId}', tags=['location'])
 async def visit_point_add(animalId: int, pointId: int, db: Session = Depends(get_db),
                     user: models.Account = Depends(get_current_account)):
+    if not user:
+        raise HTTPException(status_code=401)
     return point_visit_add(animalId, pointId, db)
 
 
 @router.get('/locations/{pointId}', tags=['location'])
-async def get_location_info(pointId: int, db: Session = Depends(get_db)):
+async def get_location_info(pointId: int, db: Session = Depends(get_db), user: models.Account = Depends(get_current_account)):
     return get_loc_info(pointId, db)
 
 
 @router.post('/locations', tags=['location'], status_code=201)
 async def add_location(location: schemas.Location, user: models.Account = Depends(get_current_account),
                        db: Session = Depends(get_db)):
+    if not user:
+        raise HTTPException(status_code=401)
     return location_add(location.latitude, location.longitude, user, db)
 
 
 @router.delete('/locations/{pointId}', tags=['location'])
 async def delete_location(pointId: int, user: models.Account = Depends(get_current_account),
                        db: Session = Depends(get_db)):
+    if not user:
+        raise HTTPException(status_code=401)
     return location_delete(pointId, user, db)
 
 

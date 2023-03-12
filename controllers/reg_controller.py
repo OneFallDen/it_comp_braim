@@ -52,7 +52,10 @@ async def get_current_account(db: Session = Depends(get_db),
                               ):
     if not credentials:
         return None
-    user = get_user(credentials.username, db)
-    if not user or not verify_password(credentials.password, user.password):  # type: ignore
+    try:
+        user = get_user(credentials.username, db)
+    except:
+        raise HTTPException(status_code=401)
+    if not user or not verify_password(credentials.password, user.password):
         raise HTTPException(status_code=401)
     return user
