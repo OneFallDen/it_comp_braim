@@ -12,13 +12,34 @@ from models import schemas
 """
 
 
+def add_account(user: schemas.AccountRegByAdmin, db: Session, hash_pass: str):
+    db_user = models.Account(
+        firstname=user.firstName,
+        lastname=user.lastName,
+        email=user.email,
+        password=hash_pass,
+        role=user.role
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return {
+        "id": db_user.id,
+        "firstName": user.firstName,
+        "lastName": user.lastName,
+        "email": user.email,
+        "role": user.role
+    }
+
+
 def get_account(account_id: int, db: Session):
     result = db.execute(select(models.Account).where(models.Account.id == account_id)).first()
     return {
         'id': result[0].id,
         'firstName': result[0].firstname,
         'lastName': result[0].lastname,
-        'email': result[0].email
+        'email': result[0].email,
+        'role': result[0].role
     }
 
 
@@ -59,7 +80,8 @@ def search_account(firstname, lastname, email, froom, size, db: Session):
                     'id': res.id,
                     'firstName': res.firstname,
                     'lastName': res.lastname,
-                    'email': res.email
+                    'email': res.email,
+                    'role': res.role
                 })
     if lastname:
         if len(accs) == 0:
@@ -69,7 +91,8 @@ def search_account(firstname, lastname, email, froom, size, db: Session):
                         'id': res.id,
                         'firstName': res.firstname,
                         'lastName': res.lastname,
-                        'email': res.email
+                        'email': res.email,
+                        'role': res.role
                     })
         else:
             for acc in accs:
@@ -86,7 +109,8 @@ def search_account(firstname, lastname, email, froom, size, db: Session):
                         'id': res.id,
                         'firstName': res.firstname,
                         'lastName': res.lastname,
-                        'email': res.email
+                        'email': res.email,
+                        'role': res.role
                     })
         else:
             for acc in accs:

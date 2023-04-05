@@ -37,6 +37,10 @@ class AccountReg(BaseModel):
     password: Union[str, None]
 
 
+class AccountRegByAdmin(AccountReg):
+    role: Union[str, None]
+
+
 class NewAnimal(BaseModel):
     animalTypes: Union[List[int], None]
     weight: Union[float, None]
