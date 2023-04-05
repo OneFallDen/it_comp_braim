@@ -10,6 +10,7 @@ from controllers.animal_controller import get_anim_info, get_info_type, search_a
 from sql import models
 from controllers.reg_controller import get_current_account
 from models import schemas
+from controllers.validation_controller import check_roles
 
 
 router = routing.APIRouter()
@@ -32,32 +33,28 @@ async def get_animal_info(animalId: int, db: Session = Depends(get_db), account:
 @router.post('/animals', tags=['animal'], status_code=201)
 async def add_animal(animal: schemas.NewAnimal, user: models.Account = Depends(get_current_account),
                      db: Session = Depends(get_db)):
-    if not user:
-        raise HTTPException(status_code=401)
+    check_roles(user.role, ['ADMIN', 'CHIPPER'])
     return animal_add(animal.animalTypes, animal.weight, animal.length, animal.height, animal.gender, animal.chipperId, animal.chippingLocationId, user, db)
 
 
 @router.put('/animals/{animalId}', tags=['animal'])
 async def update_animal(animalId: int, animal: schemas.UpdateAnimal, user: models.Account = Depends(get_current_account),
                      db: Session = Depends(get_db)):
-    if not user:
-        raise HTTPException(status_code=401)
+    check_roles(user.role, ['ADMIN', 'CHIPPER'])
     return animal_update(animalId, animal.weight, animal.length, animal.height, animal.gender, animal.lifeStatus, animal.chipperId, animal.chippingLocationId, user, db)
 
 
 @router.delete('/animals/{animalId}', tags=['animal'])
 async def delete_animal(animalId: int, user: models.Account = Depends(get_current_account),
                      db: Session = Depends(get_db)):
-    if not user:
-        raise HTTPException(status_code=401)
+    check_roles(user.role, ['ADMIN'])
     return animal_delete(animalId, user, db)
 
 
 @router.post('/animals/{animalId}/types/{typeId}', tags=['animal_type'], status_code=201)
 async def add_type_to_animal(animalId: int, typeId: int, user: models.Account = Depends(get_current_account),
                      db: Session = Depends(get_db)):
-    if not user:
-        raise HTTPException(status_code=401)
+    check_roles(user.role, ['ADMIN', 'CHIPPER'])
     return type_to_animal_add(animalId, typeId, user, db)
 
 
@@ -68,36 +65,31 @@ async def get_type_info(typeId: int, db: Session = Depends(get_db), account: Uni
 
 @router.post('/animals/types', tags=['animal_type'], status_code=201)
 async def add_animal_type(type: schemas.AddType, user: models.Account = Depends(get_current_account), db: Session = Depends(get_db)):
-    if not user:
-        raise HTTPException(status_code=401)
+    check_roles(user.role, ['ADMIN', 'CHIPPER'])
     return animal_type_add(type.type, user, db)
 
 
 @router.put('/animals/{animalId}/types', tags=['animal_type'])
 async def update_animal_types(animalId: int, animal: schemas.UpdateAnimalTypes, user: models.Account = Depends(get_current_account), db: Session = Depends(get_db)):
-    if not user:
-        raise HTTPException(status_code=401)
+    check_roles(user.role, ['ADMIN', 'CHIPPER'])
     return animal_types_update(animalId, animal.oldTypeId, animal.newTypeId, user, db)
 
 
 @router.delete('/animals/{animalId}/types/{typeId}', tags=['animal_type'])
 async def delete_type_from_animal(animalId: int, typeId: int, user: models.Account = Depends(get_current_account), db: Session = Depends(get_db)):
-    if not user:
-        raise HTTPException(status_code=401)
+    check_roles(user.role, ['ADMIN', 'CHIPPER'])
     return type_from_animal_delete(animalId, typeId, user, db)
 
 
 @router.put('/animals/types/{typeId}', tags=['animal_type'])
 async def update_animal_type(typeId: int, type: schemas.AddType, user: models.Account = Depends(get_current_account),
                           db: Session = Depends(get_db)):
-    if not user:
-        raise HTTPException(status_code=401)
+    check_roles(user.role, ['ADMIN', 'CHIPPER'])
     return animal_type_update(typeId, type.type, user, db)
 
 
 @router.delete('/animals/types/{typeId}', tags=['animal_type'])
 async def delete_animal_type(typeId: int, user: models.Account = Depends(get_current_account),
                           db: Session = Depends(get_db)):
-    if not user:
-        raise HTTPException(status_code=401)
+    check_roles(user.role, ['ADMIN'])
     return animal_type_delete(typeId, user, db)

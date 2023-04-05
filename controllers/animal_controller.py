@@ -62,7 +62,7 @@ def valid_type(a: int, db: Session):
         raise HTTPException(status_code=404)
 
 
-def type_from_animal_delete(animalId: int, typeId: int, user: models.Account, db: Session):
+def type_from_animal_delete(animalId: int, typeId: int, db: Session):
     valid_integers(animalId)
     valid_integers(typeId)
     valid_animal(animalId, db)
@@ -180,10 +180,7 @@ def animal_add(animalTypes: [], weight: float, length: float, height: float, gen
 
 
 def animal_type_delete(typeId: int, user: models.Account, db: Session):
-    if not typeId:
-        raise HTTPException(status_code=400)
-    if typeId <= 0:
-        raise HTTPException(status_code=400)
+    valid_integers(typeId)
     s = 0
     try:
         res = check_animal_type(typeId, db)
@@ -207,10 +204,7 @@ def animal_type_update(typeId: int, type: str, user: models.Account, db: Session
         raise HTTPException(status_code=400)
     if type.strip() == '':
         raise HTTPException(status_code=400)
-    if not typeId:
-        raise HTTPException(status_code=400)
-    if typeId <= 0:
-        raise HTTPException(status_code=400)
+    valid_integers(typeId)
     try:
         get_type(typeId, db)
     except:
@@ -227,12 +221,10 @@ def animal_type_update(typeId: int, type: str, user: models.Account, db: Session
     return type_update(typeId, type, db)
 
 
-def animal_type_add(type: str, user: models.Account, db: Session):
+def animal_type_add(type: str, db: Session):
     if not type:
         raise HTTPException(status_code=400)
     if type.replace(' ', '') == '':
-        raise HTTPException(status_code=400)
-    if type.strip() == '':
         raise HTTPException(status_code=400)
     if type.strip() == '':
         raise HTTPException(status_code=400)
@@ -249,10 +241,7 @@ def animal_type_add(type: str, user: models.Account, db: Session):
 
 
 def get_anim_info(animal_id: int, db: Session):
-    if not animal_id:
-        raise HTTPException(status_code=400)
-    if animal_id <= 0:
-        raise HTTPException(status_code=400)
+    valid_integers(animal_id)
     try:
         return get_animal(animal_id, db)
     except:
@@ -260,10 +249,7 @@ def get_anim_info(animal_id: int, db: Session):
 
 
 def get_info_type(type_id: int, db: Session):
-    if not type_id:
-        raise HTTPException(status_code=400)
-    if type_id <= 0:
-        raise HTTPException(status_code=400)
+    valid_integers(type_id)
     try:
         return get_type(type_id, db)
     except:
