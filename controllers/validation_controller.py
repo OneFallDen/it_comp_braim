@@ -27,3 +27,10 @@ def valid_roles(role: str):
     roles = ["ADMIN", "CHIPPER", "USER"]
     if not role in roles:
         raise HTTPException(status_code=400)
+
+
+def valid_int(integer: int):
+    if not integer:
+        raise HTTPException(status_code=400)
+    if integer <= 0:
+        raise HTTPException(status_code=400)

@@ -133,13 +133,14 @@ def search_account(firstname, lastname, email, froom, size, db: Session):
     return accs_to_send
 
 
-def acc_update(accountId: int, firstname: str, lastname: str, email: str, password: str, db: Session):
+def acc_update(accountId: int, firstname: str, lastname: str, email: str, password: str, role: str, db: Session):
     db.query(models.Account).filter(models.Account.id == accountId).update(
         {
             models.Account.firstname: firstname,
             models.Account.lastname: lastname,
             models.Account.email: email,
-            models.Account.password: password
+            models.Account.password: password,
+            models.Account.role: role
         }
     )
     db.commit()
@@ -147,7 +148,8 @@ def acc_update(accountId: int, firstname: str, lastname: str, email: str, passwo
         'id': accountId,
         'firstName': firstname,
         'lastName': lastname,
-        'email': email
+        'email': email,
+        'role': role
     }
 
 

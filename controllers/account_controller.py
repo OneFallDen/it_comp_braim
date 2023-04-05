@@ -7,7 +7,7 @@ from sql.crud import get_account, search_account, check_email, acc_update, get_a
 from sql import models
 from auth.auth import encode_password
 from models import schemas
-from controllers.validation_controller import valid_string, valid_email_pattern, valid_roles
+from controllers.validation_controller import valid_string, valid_email_pattern, valid_roles, valid_int
 
 
 def add_acc_by_admin(user: schemas.AccountRegByAdmin, db: Session):
@@ -29,10 +29,7 @@ def add_acc_by_admin(user: schemas.AccountRegByAdmin, db: Session):
 
 
 def get_acc_info(account_id: int, db: Session):
-    if not account_id:
-        raise HTTPException(status_code=400)
-    if account_id <= 0:
-        raise HTTPException(status_code=400)
+    valid_int(account_id)
     try:
         return get_account(account_id, db)
     except:
@@ -47,15 +44,14 @@ def acc_search(firstname, lastname, email, froom, size, db: Session):
     return search_account(firstname, lastname, email, froom, size, db)
 
 
-def update_acc(accountId: int, firstname: str, lastname: str, email: str, password: str, db: Session,
-               user: models.Account):
-    if user.id != accountId:
-        raise HTTPException(status_code=403)
+def update_acc(accountId: int, firstname: str, lastname: str, email: str, password: str, role: str, db: Session):
+    valid_int(accountId)
     valid_string(firstname)
     valid_string(lastname)
     valid_string(email)
     valid_email_pattern(email)
     valid_string(password)
+    valid_roles(role)
     hashed_password = encode_password(password)
     try:
         get_account(accountId, db)
@@ -66,23 +62,17 @@ def update_acc(accountId: int, firstname: str, lastname: str, email: str, passwo
         s = check_email(email, db)
     except:
         d = 1
-    if s != accountId:
-        if s > 0:
-            raise HTTPException(status_code=409)
-    return acc_update(accountId, firstname, lastname, email, hashed_password, db)
+    if s > 0:
+        raise HTTPException(status_code=409)
+    return acc_update(accountId, firstname, lastname, email, hashed_password, role, db)
 
 
 def delete_acc(accountId: int, db: Session, user: models.Account):
-    if not accountId:
-        raise HTTPException(status_code=400)
-    if accountId <= 0:
-        raise HTTPException(status_code=400)
+    valid_int(accountId)
     try:
         get_account(accountId, db)
     except:
-        raise HTTPException(status_code=403)
-    if user.id != accountId:
-        raise HTTPException(status_code=403)
+        raise HTTPException(status_code=404)
     s = 0
     try:
         res = get_account_animal(accountId, db)
@@ -92,6 +82,4 @@ def delete_acc(accountId: int, db: Session, user: models.Account):
         pass
     if s > 0:
         raise HTTPException(status_code=400)
-    if accountId != user.id:
-        raise HTTPException(status_code=403)
     acc_delete(accountId, db)

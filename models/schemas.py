@@ -37,6 +37,10 @@ class AccountReg(BaseModel):
     password: Union[str, None]
 
 
+class UpdateAccount(AccountReg):
+    role: Union[str, None]
+
+
 class AccountRegByAdmin(AccountReg):
     role: Union[str, None]
 

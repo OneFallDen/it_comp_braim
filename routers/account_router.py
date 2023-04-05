@@ -17,22 +17,20 @@ router = routing.APIRouter()
 
 
 @router.put('/accounts/{accountId}', tags=['account'])
-async def update_account(accountId: int, account: schemas.AccountReg,
+async def update_account(accountId: int, account: schemas.UpdateAccount,
                          db: Session = Depends(get_db),
                          user: models.Account = Depends(get_current_account)):
-    if not user:
-        raise HTTPException(status_code=401)
     if accountId != user.id:
-        raise HTTPException(status_code=403)
-    return update_acc(accountId, account.firstName, account.lastName, account.email, account.password, db, user)
+        check_roles(user.role, ['ADMIN'])
+    return update_acc(accountId, account.firstName, account.lastName, account.email, account.password, account.role, db)
 
 
 @router.delete('/accounts/{accountId}', tags=['account'])
 async def delete_account(accountId: int,
                          db: Session = Depends(get_db),
                          user: models.Account = Depends(get_current_account)):
-    if not user:
-        raise HTTPException(status_code=401)
+    if user.id != accountId:
+        check_roles(user.role, ['ADMIN'])
     return delete_acc(accountId, db, user)
 
 
@@ -40,7 +38,7 @@ async def delete_account(accountId: int,
 async def account_search(firstName: Union[str, None] = None, lastName: Union[str, None] = None, email: Union[str, None]
 = None, froom: Union[int, None] = Query(default=0, alias="from"), size: Union[int, None] = 10,
                            db: Session = Depends(get_db), user: Union[models.Account, None] = Depends(get_current_account)):
-    check_roles(user.role, [schemas.Roles.ADMIN])
+    check_roles(user.role, ['ADMIN'])
     return acc_search(firstName, lastName, email, froom, size, db)
 
 
