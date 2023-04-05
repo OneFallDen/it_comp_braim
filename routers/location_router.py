@@ -5,6 +5,7 @@ from datetime import datetime
 
 
 from models import schemas
+from controllers.validation_controller import check_roles
 from sql.db import get_db
 from controllers.reg_controller import get_current_account
 from sql import models
@@ -55,22 +56,19 @@ async def get_location_info(pointId: int, db: Session = Depends(get_db),
 @router.post('/locations', tags=['location'], status_code=201)
 async def add_location(location: schemas.Location, user: models.Account = Depends(get_current_account),
                        db: Session = Depends(get_db)):
-    if not user:
-        raise HTTPException(status_code=401)
+    check_roles(user.role, ['ADMIN', 'CHIPPER'])
     return location_add(location.latitude, location.longitude, user, db)
 
 
 @router.delete('/locations/{pointId}', tags=['location'])
 async def delete_location(pointId: int, user: models.Account = Depends(get_current_account),
                        db: Session = Depends(get_db)):
-    if not user:
-        raise HTTPException(status_code=401)
+    check_roles(user.role, ['ADMIN'])
     return location_delete(pointId, user, db)
 
 
 @router.put('/locations/{pointId}', tags=['location'])
 async def update_location(pointId: int, location: schemas.Location,
                        user: models.Account = Depends(get_current_account), db: Session = Depends(get_db)):
-    if not user:
-        raise HTTPException(status_code=401)
+    check_roles(user.role, ['ADMIN', 'CHIPPER'])
     return location_update(pointId, location.latitude, location.longitude, user, db)

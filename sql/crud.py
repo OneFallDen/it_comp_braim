@@ -168,6 +168,11 @@ def acc_delete(accountId: int, db: Session):
 """
 
 
+def check_animal_chipping_location(pointId: int, db: Session):
+    result = db.execute(select(models.Animal).where(models.Animal.chippinglocationid == pointId)).first()
+    return result[0]
+
+
 def add_type_to_anim(animalType: int, animalId: int, db: Session):
     db_user = models.AnimalTypes(
         animal_id=animalId,

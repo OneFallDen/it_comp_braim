@@ -4,15 +4,13 @@ from datetime import datetime
 
 from sql.crud import get_location, get_animal, loc_search, get_animal_status, last_visit_point, add_visit_point,\
     get_visited_location, check_visited_point, update_point_visit, delete_visited_point, check_location, add_loc, \
-    update_loc, check_loc_animal, delete_loc
+    update_loc, check_loc_animal, delete_loc, check_animal_chipping_location
 from sql import models
+from controllers.validation_controller import valid_int, valid_location
 
 
-def location_delete(pointId: int, user: models.Account, db: Session):
-    if not pointId:
-        raise HTTPException(status_code=400)
-    if pointId <= 0:
-        raise HTTPException(status_code=400)
+def location_delete(pointId: int, db: Session):
+    valid_int(pointId)
     s = 0
     try:
         res = check_loc_animal(pointId, db)
@@ -30,22 +28,8 @@ def location_delete(pointId: int, user: models.Account, db: Session):
 
 
 def location_update(pointId: int, latitude: float, longitude: float, user: models.Account, db: Session):
-    if not pointId:
-        raise HTTPException(status_code=400)
-    if pointId <= 0:
-        raise HTTPException(status_code=400)
-    if not latitude:
-        raise HTTPException(status_code=400)
-    if latitude < -90:
-        raise HTTPException(status_code=400)
-    if latitude > 90:
-        raise HTTPException(status_code=400)
-    if not longitude:
-        raise HTTPException(status_code=400)
-    if longitude < -180:
-        raise HTTPException(status_code=400)
-    if longitude > 180:
-        raise HTTPException(status_code=400)
+    valid_int(pointId)
+    valid_location(latitude, longitude)
     try:
         get_location(pointId, db)
     except:
@@ -59,30 +43,25 @@ def location_update(pointId: int, latitude: float, longitude: float, user: model
         pass
     if s > 0:
         raise HTTPException(status_code=409)
+    try:
+        check_loc_animal(pointId, db)
+        s = 1
+    except:
+        pass
+    if s > 0:
+        raise HTTPException(status_code=400)
+    try:
+        check_animal_chipping_location(pointId, db)
+        s = 1
+    except:
+        pass
+    if s > 0:
+        raise HTTPException(status_code=400)
     return update_loc(pointId, latitude, longitude, db)
 
 
 def location_add(latitude: float, longitude: float, user: models.Account, db: Session):
-    if latitude == 0:
-        latitude = 0.99999999
-    if longitude == 0:
-        longitude = 0.99999999
-    if not latitude:
-        raise HTTPException(status_code=400)
-    if latitude < -90:
-        raise HTTPException(status_code=400)
-    if latitude > 90:
-        raise HTTPException(status_code=400)
-    if not longitude:
-        raise HTTPException(status_code=400)
-    if longitude < -180:
-        raise HTTPException(status_code=400)
-    if longitude > 180:
-        raise HTTPException(status_code=400)
-    if latitude == 0.99999999:
-        latitude = 0
-    if longitude == 0.99999999:
-        longitude = 0
+    valid_location(latitude, longitude)
     s = 0
     try:
         res = check_location(latitude, longitude, db)
@@ -190,10 +169,7 @@ def point_visit_update(animalId: int, visitedLocationPointId: int, locationPoint
 
 
 def get_loc_info(point_id: int, db: Session):
-    if not point_id:
-        raise HTTPException(status_code=400)
-    if point_id <= 0:
-        raise HTTPException(status_code=400)
+    valid_int(point_id)
     try:
         return get_location(point_id, db)
     except:
