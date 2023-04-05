@@ -1,4 +1,5 @@
 from fastapi import routing, Depends, Query, HTTPException
+from fastapi.security import HTTPBasicCredentials
 from sqlalchemy.orm import Session
 from typing import Union
 
@@ -8,6 +9,7 @@ from sql import models
 from controllers.account_controller import get_acc_info, acc_search, update_acc, delete_acc
 from controllers.reg_controller import get_current_account
 from models import schemas
+from auth.auth import security
 
 
 router = routing.APIRouter()
@@ -17,7 +19,7 @@ router = routing.APIRouter()
 async def update_account(accountId: int, account: schemas.AccountReg,
                          db: Session = Depends(get_db),
                          user: models.Account = Depends(get_current_account)):
-    if not account:
+    if not user:
         raise HTTPException(status_code=401)
     if accountId != user.id:
         raise HTTPException(status_code=403)
@@ -28,18 +30,18 @@ async def update_account(accountId: int, account: schemas.AccountReg,
 async def delete_account(accountId: int,
                          db: Session = Depends(get_db),
                          user: models.Account = Depends(get_current_account)):
-    if accountId != user.id:
-        raise HTTPException(status_code=403)
+    if not user:
+        raise HTTPException(status_code=401)
     return delete_acc(accountId, db, user)
 
 
 @router.get('/accounts/search', tags=['account'])
-async def account_search(firstname: Union[str, None] = None, lastName: Union[str, None] = None, email: Union[str, None]
+async def account_search(firstName: Union[str, None] = None, lastName: Union[str, None] = None, email: Union[str, None]
 = None, froom: Union[int, None] = Query(default=0, alias="from"), size: Union[int, None] = 10,
-                           db: Session = Depends(get_db)):
-    return acc_search(firstname, lastName, email, froom, size, db)
+                           db: Session = Depends(get_db), user: Union[models.Account, None] = Depends(get_current_account)):
+    return acc_search(firstName, lastName, email, froom, size, db)
 
 
 @router.get('/accounts/{accountId}', tags=['account'])
-async def get_account_info(accountId: int, db: Session = Depends(get_db)):
+async def get_account_info(accountId: int, db: Session = Depends(get_db), account: Union[models.Account, None] = Depends(get_current_account)):
     return get_acc_info(accountId, db)

@@ -16,8 +16,8 @@ def get_account(account_id: int, db: Session):
     result = db.execute(select(models.Account).where(models.Account.id == account_id)).first()
     return {
         'id': result[0].id,
-        'firstname': result[0].firstname,
-        'lastname': result[0].lastname,
+        'firstName': result[0].firstname,
+        'lastName': result[0].lastname,
         'email': result[0].email
     }
 
@@ -46,7 +46,7 @@ def signup_user(firstname: str, lastname: str, email: str, password: str, db: Se
 
 
 def search_account(firstname, lastname, email, froom, size, db: Session):
-    result = db.execute(select(models.Account)).scalars().all()
+    result = db.execute(select(models.Account).order_by(models.Account.id)).scalars().all()
     accs = []
     accs_to_send = []
     to_remove = []
@@ -62,27 +62,50 @@ def search_account(firstname, lastname, email, froom, size, db: Session):
                     'email': res.email
                 })
     if lastname:
-        for acc in accs:
-            if not (lastname in acc['lastName']):
-                to_remove.append(acc)
-        for tr in to_remove:
-            accs.remove(tr)
-        to_remove.clear()
-    if email:
-        for acc in accs:
-            if not (email in acc['email']):
-                to_remove.append(acc)
-        for tr in to_remove:
-            accs.remove(tr)
-        to_remove.clear()
-    for acc in accs:
-        if j != froom:
-            j += 1
+        if len(accs) == 0:
+            for res in result:
+                if lastname in res.lastname:
+                    accs.append({
+                        'id': res.id,
+                        'firstName': res.firstname,
+                        'lastName': res.lastname,
+                        'email': res.email
+                    })
         else:
-            if i == size:
-                break
-            accs_to_send.append(acc)
-            i += 1
+            for acc in accs:
+                if not (lastname in acc['lastName']):
+                    to_remove.append(acc)
+            for tr in to_remove:
+                accs.remove(tr)
+            to_remove.clear()
+    if email:
+        if len(accs) == 0:
+            for res in result:
+                if email in res.email:
+                    accs.append({
+                        'id': res.id,
+                        'firstName': res.firstname,
+                        'lastName': res.lastname,
+                        'email': res.email
+                    })
+        else:
+            for acc in accs:
+                if not (email in acc['email']):
+                    to_remove.append(acc)
+            for tr in to_remove:
+                accs.remove(tr)
+            to_remove.clear()
+    if len(accs) != 0:
+        for acc in accs:
+            if j != froom:
+                j += 1
+            else:
+                if i == size:
+                    break
+                accs_to_send.append(acc)
+                i += 1
+    j = 0
+    i = 0
     return accs_to_send
 
 
@@ -132,7 +155,8 @@ def add_type_to_anim(animalType: int, animalId: int, db: Session):
 
 def add_anim(animalTypes: [], weight: float, length: float, height: float, gender: str, chipperId: int,
                chippingLocationId: int, db: Session):
-    date = datetime.datetime.now()
+    date = datetime.datetime.now().astimezone().replace(microsecond=0)
+    date.isoformat()
     db_user = models.Animal(
         weight=weight,
         length=length,
@@ -167,7 +191,7 @@ def add_anim(animalTypes: [], weight: float, length: float, height: float, gende
         'chippingDateTime': date,
         'chipperId': chipperId,
         'chippingLocationId': chippingLocationId,
-        'visitedLocations': [],
+        'visitedLocations': [chippingLocationId],
         'deathDateTime': None
     }
 
@@ -255,7 +279,7 @@ def get_animal(animal_id: int, db: Session):
         animal_types.append(res.type_id)
     return {
         'id': animal_id,
-        'animalsTypes': animal_types,
+        'animalTypes': animal_types,
         "weight": result[0].weight,
         "length": result[0].length,
         "height": result[0].height,
@@ -275,7 +299,7 @@ def get_type(type_id: int, db: Session):
 
 
 def anim_search(startDateTime, endDateTime, chipperId, chippingLocationId, lifeStatus, gender, froom, size, db: Session):
-    result = db.execute(select(models.Animal)).scalars().all()
+    result = db.execute(select(models.Animal).order_by(models.Animal.id)).scalars().all()
     anims = []
     anims_to_send = []
     to_remove = []
@@ -349,6 +373,7 @@ def get_animal_status(animalId: int, db: Session):
 
 def update_anim(animalId: int, weight: float, length: float, height: float, gender: str, lifeStatus: str, chipperId: int,
                chippingLocationId: int, db: Session):
+    date = datetime.datetime.now().astimezone().replace(microsecond=0)
     db.query(models.Animal).filter(models.Animal.id == animalId).update(
         {
             models.Animal.chipperid: chipperId,
@@ -365,6 +390,10 @@ def update_anim(animalId: int, weight: float, length: float, height: float, gend
 
 
 def delete_anim(animalId: int, db: Session):
+    db.query(models.AnimalTypes).filter(models.AnimalTypes.animal_id == animalId).delete()
+    db.commit()
+    db.query(models.VisitedLocations).filter(models.VisitedLocations.animal_id == animalId).delete()
+    db.commit()
     db.query(models.Animal).filter(models.Animal.id == animalId).delete()
     db.commit()
 
@@ -461,7 +490,7 @@ def update_point_visit(animalId: int, visited_id: int, loc_id: int, db: Session)
 
 
 def add_visit_point(animalId: int, pointId: int, db: Session):
-    date = datetime.datetime.now()
+    date = datetime.datetime.now().astimezone().replace(microsecond=0)
     db_user = models.VisitedLocations(
         animal_id=animalId,
         date_of_visit=date,
@@ -486,7 +515,7 @@ def last_visit_point(animalId: int, db: Session):
 
 
 def loc_search(animalId: int, startDateTime, endDateTime, froom, size, db: Session):
-    result = db.execute(select(models.VisitedLocations)).scalars().all()
+    result = db.execute(select(models.VisitedLocations).order_by(models.VisitedLocations.id)).scalars().all()
     locs = []
     locs_to_send = []
     to_remove = []

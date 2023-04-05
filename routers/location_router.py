@@ -18,7 +18,7 @@ router = routing.APIRouter()
 @router.get('/animals/{animalId}/locations', tags=['location'])
 async def location_search(animalId: int, startDateTime: Union[datetime, None] = None, endDateTime: Union[datetime, None]
 = None, froom: Union[int, None] = Query(default=0, alias="from"), size: Union[int, None] = 10,
-                           db: Session = Depends(get_db)):
+                           db: Session = Depends(get_db), account: Union[models.Account, None] = Depends(get_current_account)):
     return search_loc(animalId, startDateTime, endDateTime, froom, size, db)
 
 
@@ -38,7 +38,7 @@ async def delete_visited_point(animalId: int, visitedPointId: int, db: Session =
     return visited_point_delete(animalId, visitedPointId, db)
 
 
-@router.post('/animals/{animalId}/locations/{pointId}', tags=['location'])
+@router.post('/animals/{animalId}/locations/{pointId}', tags=['location'], status_code=201)
 async def visit_point_add(animalId: int, pointId: int, db: Session = Depends(get_db),
                     user: models.Account = Depends(get_current_account)):
     if not user:
@@ -47,7 +47,8 @@ async def visit_point_add(animalId: int, pointId: int, db: Session = Depends(get
 
 
 @router.get('/locations/{pointId}', tags=['location'])
-async def get_location_info(pointId: int, db: Session = Depends(get_db), user: models.Account = Depends(get_current_account)):
+async def get_location_info(pointId: int, db: Session = Depends(get_db),
+                            account: Union[models.Account, None] = Depends(get_current_account)):
     return get_loc_info(pointId, db)
 
 
@@ -70,4 +71,6 @@ async def delete_location(pointId: int, user: models.Account = Depends(get_curre
 @router.put('/locations/{pointId}', tags=['location'])
 async def update_location(pointId: int, location: schemas.Location,
                        user: models.Account = Depends(get_current_account), db: Session = Depends(get_db)):
+    if not user:
+        raise HTTPException(status_code=401)
     return location_update(pointId, location.latitude, location.longitude, user, db)

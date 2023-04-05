@@ -5,6 +5,8 @@ from config import PASSWORD_SALT
 
 security = HTTPBasic()
 
+security_for_reg = HTTPBasic(auto_error=False)
+
 
 hasher = CryptContext(schemes=['bcrypt'])
 

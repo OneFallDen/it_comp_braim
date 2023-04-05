@@ -4,6 +4,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import DECIMAL
 from datetime import datetime
+from sql.database import SessionLocal
+from passlib.context import CryptContext
+import os
 
 
 from sql.database import engine
@@ -19,6 +22,7 @@ class Account(Base):
     lastname = Column(String(255), nullable=False)
     password = Column(String(255), nullable=False)
     email = Column(String(255), nullable=False)
+    role = Column(String(255), nullable=False, default="USER")
 
 
 class Animal(Base):
@@ -30,7 +34,7 @@ class Animal(Base):
     height = Column(DECIMAL, nullable=False)
     gender = Column(String(255), nullable=False)
     lifestatus = Column(String(255), nullable=False)
-    chippingdatetime = Column(DateTime(), nullable=False)
+    chippingdatetime = Column(DateTime(timezone=True), nullable=False)
     chipperid = Column(Integer, nullable=False)
     chippinglocationid = Column(Integer, nullable=False)
     deathdatetime = Column(DateTime)
@@ -61,7 +65,7 @@ class VisitedLocations(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     animal_id = Column(Integer, ForeignKey('animal.id'), nullable=False)
-    date_of_visit = Column(DateTime, default=datetime.now())
+    date_of_visit = Column(DateTime(timezone=True), default=datetime.now().astimezone().replace(microsecond=0))
     loc_id = Column(Integer, ForeignKey('locations.id'), nullable=False)
 
 
@@ -86,5 +90,41 @@ def drop_tables():
 if __name__ == '__main__':
     if sys.argv[1] == 'createdb':
         create_db_and_tables()
+        password = 'qwerty123'
+        PASSWORD_SALT = os.environ['PASSWORD_SALT']
+        hasher = CryptContext(schemes=['bcrypt'])
+        passw = hasher.hash(password + PASSWORD_SALT)
+        with SessionLocal() as db:
+            db_admin = Account(
+                firstname="adminFirstName",
+                lastname="adminLastName",
+                email="admin@simbirsoft.com",
+                password=passw,
+                role="ADMIN"
+            )
+            db.add(db_admin)
+            db.commit()
+            db.refresh(db_admin)
+            db_chipper = Account(
+                firstname="chipperFirstName",
+                lastname="chipperLastName",
+                email="chipper@simbirsoft.com",
+                password=passw,
+                role="CHIPPER"
+            )
+            db.add(db_chipper)
+            db.commit()
+            db.refresh(db_chipper)
+            db_user = Account(
+                firstname="userFirstName",
+                lastname="userLastName",
+                email="user@simbirsoft.com",
+                password=passw,
+                role="USER"
+            )
+            db.add(db_user)
+            db.commit()
+            db.refresh(db_user)
+
     elif sys.argv[1] == 'dropdb':
         drop_tables()

@@ -16,9 +16,17 @@ def reg_user(firstname: str, lastname: str, email: str, password: str, db: Sessi
         raise HTTPException(status_code=400)
     if firstname.replace(' ', '') == '':
         raise HTTPException(status_code=400)
+    if firstname.replace('\n', '') == '':
+        raise HTTPException(status_code=400)
+    if firstname.replace('\t', '') == '':
+        raise HTTPException(status_code=400)
     if not lastname:
         raise HTTPException(status_code=400)
     if lastname.replace(' ', '') == '':
+        raise HTTPException(status_code=400)
+    if lastname.replace('\n', '') == '':
+        raise HTTPException(status_code=400)
+    if lastname.replace('\t', '') == '':
         raise HTTPException(status_code=400)
     if not email:
         raise HTTPException(status_code=400)
@@ -29,6 +37,10 @@ def reg_user(firstname: str, lastname: str, email: str, password: str, db: Sessi
     if not password:
         raise HTTPException(status_code=400)
     if password.replace(' ', '') == '':
+        raise HTTPException(status_code=400)
+    if password.replace('\n', '') == '':
+        raise HTTPException(status_code=400)
+    if password.replace('\t', '') == '':
         raise HTTPException(status_code=400)
     s = 0
     try:
@@ -41,9 +53,10 @@ def reg_user(firstname: str, lastname: str, email: str, password: str, db: Sessi
     user_id = signup_user(firstname, lastname, email, hashed_password, db)
     return {
         'id': user_id,
-        'firstname': firstname,
-        'lastname': lastname,
-        'email': email
+        'firstName': firstname,
+        'lastName': lastname,
+        'email': email,
+        'role': 'USER'
     }
 
 
@@ -51,10 +64,12 @@ async def get_current_account(db: Session = Depends(get_db),
                               credentials: Union[HTTPBasicCredentials, None] = Depends(security),
                               ):
     if not credentials:
-        return None
+        raise HTTPException(status_code=401)
     try:
         user = get_user(credentials.username, db)
     except:
+        raise HTTPException(status_code=401)
+    if re.match(pattern, credentials.username) is None:
         raise HTTPException(status_code=401)
     if not user or not verify_password(credentials.password, user.password):
         raise HTTPException(status_code=401)

@@ -158,7 +158,7 @@ def animal_add(animalTypes: [], weight: float, length: float, height: float, gen
         try:
             get_type(at, db)
         except:
-            raise HTTPException(status_code=400)
+            raise HTTPException(status_code=404)
     valid_float(weight)
     valid_float(length)
     valid_float(height)
@@ -205,6 +205,8 @@ def animal_type_update(typeId: int, type: str, user: models.Account, db: Session
         raise HTTPException(status_code=400)
     if type.replace(' ', '') == '':
         raise HTTPException(status_code=400)
+    if type.strip() == '':
+        raise HTTPException(status_code=400)
     if not typeId:
         raise HTTPException(status_code=400)
     if typeId <= 0:
@@ -213,6 +215,15 @@ def animal_type_update(typeId: int, type: str, user: models.Account, db: Session
         get_type(typeId, db)
     except:
         raise HTTPException(status_code=404)
+    s = 0
+    try:
+        res = check_type(type, db)
+        if res:
+            s = 1
+    except:
+        pass
+    if s > 0:
+        raise HTTPException(status_code=409)
     return type_update(typeId, type, db)
 
 
@@ -220,6 +231,10 @@ def animal_type_add(type: str, user: models.Account, db: Session):
     if not type:
         raise HTTPException(status_code=400)
     if type.replace(' ', '') == '':
+        raise HTTPException(status_code=400)
+    if type.strip() == '':
+        raise HTTPException(status_code=400)
+    if type.strip() == '':
         raise HTTPException(status_code=400)
     s = 0
     try:

@@ -32,6 +32,25 @@ def update_acc(accountId: int, firstname: str, lastname: str, email: str, passwo
                user: models.Account):
     if user.id != accountId:
         raise HTTPException(status_code=403)
+    if not firstname:
+        raise HTTPException(status_code=400)
+    if firstname.strip() == '':
+        raise HTTPException(status_code=400)
+    if not lastname:
+        raise HTTPException(status_code=400)
+    if lastname.strip() == '':
+        raise HTTPException(status_code=400)
+    if not email:
+        raise HTTPException(status_code=400)
+    if email.strip() == '':
+        raise HTTPException(status_code=400)
+    if re.match(pattern, email) is None:
+        raise HTTPException(status_code=400)
+    if not password:
+        raise HTTPException(status_code=400)
+    if password.strip() == '':
+        raise HTTPException(status_code=400)
+    hashed_password = encode_password(password)
     try:
         get_account(accountId, db)
     except:
@@ -41,27 +60,9 @@ def update_acc(accountId: int, firstname: str, lastname: str, email: str, passwo
         s = check_email(email, db)
     except:
         d = 1
-    if s > 0:
-        raise HTTPException(status_code=409)
-    if not firstname:
-        raise HTTPException(status_code=400)
-    if firstname.replace(' ', '') == '':
-        raise HTTPException(status_code=400)
-    if not lastname:
-        raise HTTPException(status_code=400)
-    if lastname.replace(' ', '') == '':
-        raise HTTPException(status_code=400)
-    if not email:
-        raise HTTPException(status_code=400)
-    if email.replace(' ', '') == '':
-        raise HTTPException(status_code=400)
-    if re.match(pattern, email) is None:
-        raise HTTPException(status_code=400)
-    if not password:
-        raise HTTPException(status_code=400)
-    if password.replace(' ', '') == '':
-        raise HTTPException(status_code=400)
-    hashed_password = encode_password(password)
+    if s != accountId:
+        if s > 0:
+            raise HTTPException(status_code=409)
     return acc_update(accountId, firstname, lastname, email, hashed_password, db)
 
 
@@ -76,12 +77,15 @@ def delete_acc(accountId: int, db: Session, user: models.Account):
         raise HTTPException(status_code=403)
     if user.id != accountId:
         raise HTTPException(status_code=403)
+    s = 0
     try:
         res = get_account_animal(accountId, db)
         if res:
-            raise HTTPException(status_code=400)
+            s = 1
     except:
-        flag = False
-    if flag == True:
+        pass
+    if s > 0:
         raise HTTPException(status_code=400)
+    if accountId != user.id:
+        raise HTTPException(status_code=403)
     acc_delete(accountId, db)

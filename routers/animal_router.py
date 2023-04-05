@@ -19,12 +19,13 @@ router = routing.APIRouter()
 async def animal_search(startDateTime: Union[datetime, None] = None, endDateTime: Union[datetime, None] = None,
 chipperId: Union[int, None] = None, chippingLocationId: Union[int, None] = None, lifeStatus: Union[str, None] = None,
 gender: Union[str, None] = None,
-froom: Union[int, None] = Query(default=0, alias="from"), size: Union[int, None] = 10, db: Session = Depends(get_db)):
+froom: Union[int, None] = Query(default=0, alias="from"), size: Union[int, None] = 10, db: Session = Depends(get_db),
+                        account: Union[models.Account, None] = Depends(get_current_account)):
     return search_anim(startDateTime, endDateTime, chipperId, chippingLocationId, lifeStatus, gender, froom, size, db)
 
 
 @router.get('/animals/{animalId}', tags=['animal'])
-async def get_animal_info(animalId: int, db: Session = Depends(get_db)):
+async def get_animal_info(animalId: int, db: Session = Depends(get_db), account: Union[models.Account, None] = Depends(get_current_account)):
     return get_anim_info(animalId, db)
 
 
@@ -52,7 +53,7 @@ async def delete_animal(animalId: int, user: models.Account = Depends(get_curren
     return animal_delete(animalId, user, db)
 
 
-@router.post('/animals/{animalId}/types/{typeId}', tags=['animal_type'])
+@router.post('/animals/{animalId}/types/{typeId}', tags=['animal_type'], status_code=201)
 async def add_type_to_animal(animalId: int, typeId: int, user: models.Account = Depends(get_current_account),
                      db: Session = Depends(get_db)):
     if not user:
@@ -61,7 +62,7 @@ async def add_type_to_animal(animalId: int, typeId: int, user: models.Account = 
 
 
 @router.get('/animals/types/{typeId}', tags=['animal_type'])
-async def get_type_info(typeId: int, db: Session = Depends(get_db)):
+async def get_type_info(typeId: int, db: Session = Depends(get_db), account: Union[models.Account, None] = Depends(get_current_account)):
     return get_info_type(typeId, db)
 
 

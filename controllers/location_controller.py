@@ -63,6 +63,10 @@ def location_update(pointId: int, latitude: float, longitude: float, user: model
 
 
 def location_add(latitude: float, longitude: float, user: models.Account, db: Session):
+    if latitude == 0:
+        latitude = 0.99999999
+    if longitude == 0:
+        longitude = 0.99999999
     if not latitude:
         raise HTTPException(status_code=400)
     if latitude < -90:
@@ -75,6 +79,10 @@ def location_add(latitude: float, longitude: float, user: models.Account, db: Se
         raise HTTPException(status_code=400)
     if longitude > 180:
         raise HTTPException(status_code=400)
+    if latitude == 0.99999999:
+        latitude = 0
+    if longitude == 0.99999999:
+        longitude = 0
     s = 0
     try:
         res = check_location(latitude, longitude, db)
