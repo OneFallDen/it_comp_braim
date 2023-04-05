@@ -75,14 +75,8 @@ def location_add(latitude: float, longitude: float, user: models.Account, db: Se
 
 
 def point_visit_add(animalId: int, pointId: int, db: Session):
-    if not pointId:
-        raise HTTPException(status_code=400)
-    if pointId <= 0:
-        raise HTTPException(status_code=400)
-    if not animalId:
-        raise HTTPException(status_code=400)
-    if animalId <= 0:
-        raise HTTPException(status_code=400)
+    valid_int(pointId)
+    valid_int(pointId)
     try:
         animal = get_animal(animalId, db)
     except:
@@ -103,14 +97,8 @@ def point_visit_add(animalId: int, pointId: int, db: Session):
 
 
 def visited_point_delete(animalId: int, visitedPointId: int, db: Session):
-    if not animalId:
-        raise HTTPException(status_code=400)
-    if animalId <= 0:
-        raise HTTPException(status_code=400)
-    if not visitedPointId:
-        raise HTTPException(status_code=400)
-    if visitedPointId <= 0:
-        raise HTTPException(status_code=400)
+    valid_int(animalId)
+    valid_int(visitedPointId)
     try:
         animal = get_animal(animalId, db)
     except:
@@ -129,18 +117,9 @@ def visited_point_delete(animalId: int, visitedPointId: int, db: Session):
 
 
 def point_visit_update(animalId: int, visitedLocationPointId: int, locationPointId: int, db: Session):
-    if not animalId:
-        raise HTTPException(status_code=400)
-    if animalId <= 0:
-        raise HTTPException(status_code=400)
-    if not visitedLocationPointId:
-        raise HTTPException(status_code=400)
-    if visitedLocationPointId <= 0:
-        raise HTTPException(status_code=400)
-    if not locationPointId:
-        raise HTTPException(status_code=400)
-    if locationPointId <= 0:
-        raise HTTPException(status_code=400)
+    valid_int(animalId)
+    valid_int(visitedLocationPointId)
+    valid_int(locationPointId)
     try:
         animal = get_animal(animalId, db)
     except:
@@ -181,10 +160,7 @@ def search_loc(animalId: int, startDateTime, endDateTime, froom, size, db: Sessi
         raise HTTPException(status_code=400)
     if size <= 0:
         raise HTTPException(status_code=400)
-    if not animalId:
-        raise HTTPException(status_code=400)
-    if animalId <= 0:
-        raise HTTPException(status_code=400)
+    valid_int(animalId)
     try:
         get_animal(animalId, db)
     except:

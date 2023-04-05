@@ -26,24 +26,21 @@ async def location_search(animalId: int, startDateTime: Union[datetime, None] = 
 @router.put('/animals/{animalId}/locations', tags=['location'])
 async def visit_point_update(animalId: int, location: schemas.UpdatePoint, db: Session = Depends(get_db),
                     user: models.Account = Depends(get_current_account)):
-    if not user:
-        raise HTTPException(status_code=401)
+    check_roles(user.role, ['ADMIN', 'CHIPPER'])
     return point_visit_update(animalId, location.visitedLocationPointId, location.locationPointId, db)
 
 
 @router.delete('/animals/{animalId}/locations/{visitedPointId}', tags=['location'])
 async def delete_visited_point(animalId: int, visitedPointId: int, db: Session = Depends(get_db),
                                user: models.Account = Depends(get_current_account)):
-    if not user:
-        raise HTTPException(status_code=401)
+    check_roles(user.role, ['ADMIN'])
     return visited_point_delete(animalId, visitedPointId, db)
 
 
 @router.post('/animals/{animalId}/locations/{pointId}', tags=['location'], status_code=201)
 async def visit_point_add(animalId: int, pointId: int, db: Session = Depends(get_db),
                     user: models.Account = Depends(get_current_account)):
-    if not user:
-        raise HTTPException(status_code=401)
+    check_roles(user.role, ['ADMIN', 'CHIPPER'])
     return point_visit_add(animalId, pointId, db)
 
 
