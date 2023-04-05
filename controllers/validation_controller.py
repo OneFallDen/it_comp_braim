@@ -34,3 +34,22 @@ def valid_int(integer: int):
         raise HTTPException(status_code=400)
     if integer <= 0:
         raise HTTPException(status_code=400)
+
+
+def valid_location(latitude: float, longitude: float):
+    if latitude == 0:
+        latitude = 0.99999999
+    if longitude == 0:
+        longitude = 0.99999999
+    if not latitude:
+        raise HTTPException(status_code=400)
+    if latitude < -90:
+        raise HTTPException(status_code=400)
+    if latitude > 90:
+        raise HTTPException(status_code=400)
+    if not longitude:
+        raise HTTPException(status_code=400)
+    if longitude < -180:
+        raise HTTPException(status_code=400)
+    if longitude > 180:
+        raise HTTPException(status_code=400)
