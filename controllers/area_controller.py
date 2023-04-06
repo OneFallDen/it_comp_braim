@@ -7,7 +7,7 @@ from shapely.geometry import Polygon, Point, LineString
 from sql import models
 from models import schemas
 from controllers.validation_controller import valid_string, valid_location, valid_roles, valid_int
-from sql.crud import get_area_by_name, get_all_areas, get_area_points, area_add
+from sql.crud import get_area_by_name, get_all_areas, get_area_points, area_add, area_get
 
 
 def add_new_area(area: schemas.AreaToAdd, db: Session):
@@ -98,3 +98,11 @@ def add_new_area(area: schemas.AreaToAdd, db: Session):
     if x > 0:
         raise HTTPException(status_code=409)
     return area_add(area, db)
+
+
+def get_area_by_id(areaId: int, db: Session):
+    valid_int(areaId)
+    try:
+        return area_get(areaId, db)
+    except:
+        raise HTTPException(status_code=404)

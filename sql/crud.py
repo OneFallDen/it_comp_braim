@@ -605,7 +605,7 @@ def get_all_areas(db: Session):
 
 
 def get_area_points(areaId: int, db: Session):
-    result = db.execute(select(models.Area).where(models.Area.id == areaId)).scalars().all()
+    result = db.execute(select(models.AreaPoints).where(models.AreaPoints.area_id == areaId)).scalars().all()
     return result
 
 
@@ -636,5 +636,23 @@ def area_add(area: schemas.AreaToAdd, db: Session):
     return {
         'id': db_area.id,
         'name': area.name,
+        'areaPoints': areaPoints
+    }
+
+
+def area_get(areaId: int, db: Session):
+    areaPoints = []
+    result = db.execute(select(models.Area).where(models.Area.id == areaId)).first()
+    name = result[0].name
+    result = db.execute(select(models.AreaPoints).where(models.AreaPoints.area_id == areaId)
+                        .order_by(models.AreaPoints.point_id)).scalars().all()
+    for res in result:
+        areaPoints.append({
+            "longitude": res.longitude,
+            "latitude": res.latitude
+        })
+    return {
+        'id': areaId,
+        'name': name,
         'areaPoints': areaPoints
     }
