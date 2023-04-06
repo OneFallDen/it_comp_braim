@@ -1,5 +1,4 @@
-from fastapi import routing, Depends, Query, HTTPException
-from fastapi.security import HTTPBasicCredentials
+from fastapi import routing, Depends, Query
 from sqlalchemy.orm import Session
 from typing import Union
 
@@ -10,7 +9,6 @@ from controllers.account_controller import get_acc_info, acc_search, update_acc,
 from controllers.reg_controller import get_current_account
 from models import schemas
 from controllers.validation_controller import check_roles
-from auth.auth import security
 
 
 router = routing.APIRouter()

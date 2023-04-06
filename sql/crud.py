@@ -587,3 +587,54 @@ def loc_search(animalId: int, startDateTime, endDateTime, froom, size, db: Sessi
             locs_to_send.append(loc)
             i += 1
     return locs_to_send
+
+
+"""
+    AREA
+"""
+
+
+def get_area_by_name(name: str, db: Session):
+    result = db.execute(select(models.Area).where(models.Area.name == name)).first()
+    return result[0]
+
+
+def get_all_areas(db: Session):
+    result = db.execute(select(models.Area)).scalars().all()
+    return result
+
+
+def get_area_points(areaId: int, db: Session):
+    result = db.execute(select(models.Area).where(models.Area.id == areaId)).scalars().all()
+    return result
+
+
+def area_add(area: schemas.AreaToAdd, db: Session):
+    db_area = models.Area(
+        name=area.name
+    )
+    db.add(db_area)
+    db.commit()
+    db.refresh(db_area)
+    areaPoints = []
+    i = 1
+    for ap in area.areaPoints:
+        db_points = models.AreaPoints(
+            area_id=db_area.id,
+            point_id=i,
+            latitude=ap.latitude,
+            longitude=ap.longitude
+        )
+        db.add(db_points)
+        db.commit()
+        db.refresh(db_points)
+        i += 1
+        areaPoints.append({
+            'longitude': ap.longitude,
+            'latitude': ap.latitude
+        })
+    return {
+        'id': db_area.id,
+        'name': area.name,
+        'areaPoints': areaPoints
+    }

@@ -74,3 +74,8 @@ class Roles(str, Enum):
     ADMIN: "ADMIN"
     CHIPPER: "CHIPPER"
     USER: "USER"
+
+
+class AreaToAdd(BaseModel):
+    name: Union[str, None]
+    areaPoints: Union[List, None]
