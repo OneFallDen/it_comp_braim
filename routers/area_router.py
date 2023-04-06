@@ -4,7 +4,7 @@ from typing import Union
 
 
 from sql.db import get_db
-from controllers.area_controller import add_new_area, get_area_by_id
+from controllers.area_controller import add_new_area, get_area_by_id, delete_area_by_id
 from sql import models
 from models import schemas
 from controllers.validation_controller import check_roles
@@ -25,3 +25,10 @@ async def add_area(area: schemas.AreaToAdd, db: Session = Depends(get_db),
 async def get_area(areaId: int, db: Session = Depends(get_db),
                    account: Union[models.Account, None] = Depends(get_current_account)):
     return get_area_by_id(areaId, db)
+
+
+@router.delete('/areas/{areaId}', tags=['areas'])
+async def delete_area(areaId: int, db: Session = Depends(get_db),
+                      account: Union[models.Account, None] = Depends(get_current_account)):
+    check_roles(account.role, ['ADMIN'])
+    delete_area_by_id(areaId, db)

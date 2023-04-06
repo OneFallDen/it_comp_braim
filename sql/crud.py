@@ -656,3 +656,10 @@ def area_get(areaId: int, db: Session):
         'name': name,
         'areaPoints': areaPoints
     }
+
+
+def area_delete(areaId: int, db: Session):
+    db.query(models.Area).filter(models.Area.id == areaId).delete()
+    db.commit()
+    db.query(models.AreaPoints).filter(models.AreaPoints.area_id == areaId).delete()
+    db.commit()
