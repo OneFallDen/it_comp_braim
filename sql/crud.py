@@ -663,3 +663,36 @@ def area_delete(areaId: int, db: Session):
     db.commit()
     db.query(models.AreaPoints).filter(models.AreaPoints.area_id == areaId).delete()
     db.commit()
+
+
+def area_update(areaId: int, area: schemas.AreaToAdd, db: Session):
+    db.query(models.Area).filter(models.Area.id == areaId).update(
+        {
+            models.Area.name: area.name
+        }
+    )
+    db.commit()
+    db.query(models.AreaPoints).filter(models.AreaPoints.area_id == areaId).delete()
+    db.commit()
+    areaPoints = []
+    i = 1
+    for ap in area.areaPoints:
+        db_points = models.AreaPoints(
+            area_id=areaId,
+            point_id=i,
+            latitude=ap.latitude,
+            longitude=ap.longitude
+        )
+        db.add(db_points)
+        db.commit()
+        db.refresh(db_points)
+        i += 1
+        areaPoints.append({
+            'longitude': ap.longitude,
+            'latitude': ap.latitude
+        })
+    return {
+        'id': areaId,
+        'name': area.name,
+        'areaPoints': areaPoints
+    }
