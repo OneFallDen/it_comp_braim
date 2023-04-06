@@ -79,6 +79,24 @@ class Locations(Base):
     visitedLocations = relationship('VisitedLocations', backref='locations')
 
 
+class Area(Base):
+    __tablename__ = 'area'
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255), nullable=False)
+
+    areaPoints = relationship('AreaPoints', backref='area')
+
+
+class AreaPoints(Base):
+    __tablename__ = 'area_points'
+    id = Column(Integer, primary_key=True, index=True)
+    area_id = Column(Integer, ForeignKey('area.id'), nullable=False)
+    point_id = Column(Integer, nullable=False)
+    latitude = Column(DECIMAL, nullable=False)
+    longitude = Column(DECIMAL, nullable=False)
+
+
 def create_db_and_tables():
     Base.metadata.create_all(engine)
 
