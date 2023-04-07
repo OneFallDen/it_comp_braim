@@ -67,69 +67,6 @@ def signup_user(firstname: str, lastname: str, email: str, password: str, db: Se
 
 
 def search_account(firstname, lastname, email, froom, size, db: Session):
-    # result = db.execute(select(models.Account).order_by(models.Account.id)).scalars().all()
-    # accs = []
-    # accs_to_send = []
-    # to_remove = []
-    # i = 0
-    # j = 0
-    # if firstname:
-    #     for res in result:
-    #         if firstname in res.firstname:
-    #             accs.append({
-    #                 'id': res.id,
-    #                 'firstName': res.firstname,
-    #                 'lastName': res.lastname,
-    #                 'email': res.email,
-    #                 'role': res.role
-    #             })
-    # if lastname:
-    #     if len(accs) == 0:
-    #         for res in result:
-    #             if lastname in res.lastname:
-    #                 accs.append({
-    #                     'id': res.id,
-    #                     'firstName': res.firstname,
-    #                     'lastName': res.lastname,
-    #                     'email': res.email,
-    #                     'role': res.role
-    #                 })
-    #     else:
-    #         for acc in accs:
-    #             if not (lastname in acc['lastName']):
-    #                 to_remove.append(acc)
-    #         for tr in to_remove:
-    #             accs.remove(tr)
-    #         to_remove.clear()
-    # if email:
-    #     if len(accs) == 0:
-    #         for res in result:
-    #             if email in res.email:
-    #                 accs.append({
-    #                     'id': res.id,
-    #                     'firstName': res.firstname,
-    #                     'lastName': res.lastname,
-    #                     'email': res.email,
-    #                     'role': res.role
-    #                 })
-    #     else:
-    #         for acc in accs:
-    #             if not (email in acc['email']):
-    #                 to_remove.append(acc)
-    #         for tr in to_remove:
-    #             accs.remove(tr)
-    #         to_remove.clear()
-    # if len(accs) != 0:
-    #     for acc in accs:
-    #         if j != froom:
-    #             j += 1
-    #         else:
-    #             if i == size:
-    #                 break
-    #             accs_to_send.append(acc)
-    #             i += 1
-    # j = 0
-    # i = 0
     accs_to_send = []
     dct = {
         0: models.Account.firstname,
@@ -714,3 +651,28 @@ def area_update(areaId: int, area: schemas.AreaToAdd, db: Session):
         'name': area.name,
         'areaPoints': aPoints
     }
+
+
+def get_all_visits(startDate, endDate, db: Session):
+    result = db.execute(select(models.VisitedLocations).order_by(models.VisitedLocations.id)).scalars().all()
+    return result
+
+
+def get_area_point(areaId: int, db: Session):
+    result = db.execute(select(models.AreaPoints).where(models.AreaPoints.area_id == areaId)
+                        .order_by(models.AreaPoints.point_id)).scalars().all()
+    return result
+
+
+def get_points_before_date(animalId: int, startDate: datetime, db: Session):
+    result = db.execute(select(models.VisitedLocations).where(models.VisitedLocations.date_of_visit < startDate)
+                        .where(models.VisitedLocations.animal_id == animalId)).scalars().all()
+    return result
+
+
+def get_points_in_date(animalId: int, startDate: datetime, enddate: datetime, db: Session):
+    result = db.execute(select(models.VisitedLocations).where(models.VisitedLocations.date_of_visit >= startDate)
+                        .where(models.VisitedLocations.animal_id == animalId)
+                        .where(models.VisitedLocations.date_of_visit <= enddate)
+                        .order_by(models.VisitedLocations.date_of_visit)).scalars().all()
+    return result
