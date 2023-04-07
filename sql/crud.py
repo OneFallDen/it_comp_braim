@@ -1,6 +1,6 @@
 import datetime
 
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
@@ -67,69 +67,86 @@ def signup_user(firstname: str, lastname: str, email: str, password: str, db: Se
 
 
 def search_account(firstname, lastname, email, froom, size, db: Session):
-    result = db.execute(select(models.Account).order_by(models.Account.id)).scalars().all()
-    accs = []
+    # result = db.execute(select(models.Account).order_by(models.Account.id)).scalars().all()
+    # accs = []
+    # accs_to_send = []
+    # to_remove = []
+    # i = 0
+    # j = 0
+    # if firstname:
+    #     for res in result:
+    #         if firstname in res.firstname:
+    #             accs.append({
+    #                 'id': res.id,
+    #                 'firstName': res.firstname,
+    #                 'lastName': res.lastname,
+    #                 'email': res.email,
+    #                 'role': res.role
+    #             })
+    # if lastname:
+    #     if len(accs) == 0:
+    #         for res in result:
+    #             if lastname in res.lastname:
+    #                 accs.append({
+    #                     'id': res.id,
+    #                     'firstName': res.firstname,
+    #                     'lastName': res.lastname,
+    #                     'email': res.email,
+    #                     'role': res.role
+    #                 })
+    #     else:
+    #         for acc in accs:
+    #             if not (lastname in acc['lastName']):
+    #                 to_remove.append(acc)
+    #         for tr in to_remove:
+    #             accs.remove(tr)
+    #         to_remove.clear()
+    # if email:
+    #     if len(accs) == 0:
+    #         for res in result:
+    #             if email in res.email:
+    #                 accs.append({
+    #                     'id': res.id,
+    #                     'firstName': res.firstname,
+    #                     'lastName': res.lastname,
+    #                     'email': res.email,
+    #                     'role': res.role
+    #                 })
+    #     else:
+    #         for acc in accs:
+    #             if not (email in acc['email']):
+    #                 to_remove.append(acc)
+    #         for tr in to_remove:
+    #             accs.remove(tr)
+    #         to_remove.clear()
+    # if len(accs) != 0:
+    #     for acc in accs:
+    #         if j != froom:
+    #             j += 1
+    #         else:
+    #             if i == size:
+    #                 break
+    #             accs_to_send.append(acc)
+    #             i += 1
+    # j = 0
+    # i = 0
     accs_to_send = []
-    to_remove = []
-    i = 0
-    j = 0
-    if firstname:
-        for res in result:
-            if firstname in res.firstname:
-                accs.append({
-                    'id': res.id,
-                    'firstName': res.firstname,
-                    'lastName': res.lastname,
-                    'email': res.email,
-                    'role': res.role
-                })
-    if lastname:
-        if len(accs) == 0:
-            for res in result:
-                if lastname in res.lastname:
-                    accs.append({
-                        'id': res.id,
-                        'firstName': res.firstname,
-                        'lastName': res.lastname,
-                        'email': res.email,
-                        'role': res.role
-                    })
-        else:
-            for acc in accs:
-                if not (lastname in acc['lastName']):
-                    to_remove.append(acc)
-            for tr in to_remove:
-                accs.remove(tr)
-            to_remove.clear()
-    if email:
-        if len(accs) == 0:
-            for res in result:
-                if email in res.email:
-                    accs.append({
-                        'id': res.id,
-                        'firstName': res.firstname,
-                        'lastName': res.lastname,
-                        'email': res.email,
-                        'role': res.role
-                    })
-        else:
-            for acc in accs:
-                if not (email in acc['email']):
-                    to_remove.append(acc)
-            for tr in to_remove:
-                accs.remove(tr)
-            to_remove.clear()
-    if len(accs) != 0:
-        for acc in accs:
-            if j != froom:
-                j += 1
-            else:
-                if i == size:
-                    break
-                accs_to_send.append(acc)
-                i += 1
-    j = 0
-    i = 0
+    dct = {
+        0: models.Account.firstname,
+        1: models.Account.lastname,
+        2: models.Account.email,
+    }
+    args = (firstname, lastname, email)
+    lst = [dct[i].ilike(f"%{arg}%") for i, arg in enumerate(args) if arg]
+    result = db.query(models.Account).filter(and_(*lst)).order_by(models.Account.id).offset(froom).limit(size).all()
+    for res in result:
+        accs_to_send.append({
+            'id': res.id,
+            'firstName': res.firstname,
+            'lastName': res.lastname,
+            'email': res.email,
+            'role': res.role
+        })
     return accs_to_send
 
 
@@ -413,7 +430,7 @@ def update_anim(animalId: int, weight: float, length: float, height: float, gend
             models.Animal.weight: weight,
             models.Animal.gender: gender,
             models.Animal.lifestatus: lifeStatus,
-            models.Animal.chippinglocationid: chippingLocationId
+            models.Animal.chippinglocationid: chippingLocationId,
         }
     )
     db.commit()
@@ -506,7 +523,8 @@ def delete_visited_point(animalId: int, visitedPointId: int, db: Session):
 
 
 def update_point_visit(animalId: int, visited_id: int, loc_id: int, db: Session):
-    db.query(models.VisitedLocations).filter(models.VisitedLocations.id == visited_id).update(
+    db.query(models.VisitedLocations).filter(models.VisitedLocations.id == visited_id)\
+        .filter(models.VisitedLocations.animal_id == animalId).update(
         {
             models.VisitedLocations.loc_id: loc_id
         }
@@ -616,27 +634,27 @@ def area_add(area: schemas.AreaToAdd, db: Session):
     db.add(db_area)
     db.commit()
     db.refresh(db_area)
-    areaPoints = []
+    aPoints = []
     i = 1
     for ap in area.areaPoints:
         db_points = models.AreaPoints(
             area_id=db_area.id,
             point_id=i,
-            latitude=ap.latitude,
-            longitude=ap.longitude
+            latitude=ap['latitude'],
+            longitude=ap['longitude']
         )
         db.add(db_points)
         db.commit()
         db.refresh(db_points)
         i += 1
-        areaPoints.append({
-            'longitude': ap.longitude,
-            'latitude': ap.latitude
+        aPoints.append({
+            'longitude': ap['longitude'],
+            'latitude': ap['latitude']
         })
     return {
         'id': db_area.id,
         'name': area.name,
-        'areaPoints': areaPoints
+        'areaPoints': aPoints
     }
 
 
@@ -659,9 +677,9 @@ def area_get(areaId: int, db: Session):
 
 
 def area_delete(areaId: int, db: Session):
-    db.query(models.Area).filter(models.Area.id == areaId).delete()
-    db.commit()
     db.query(models.AreaPoints).filter(models.AreaPoints.area_id == areaId).delete()
+    db.commit()
+    db.query(models.Area).filter(models.Area.id == areaId).delete()
     db.commit()
 
 
@@ -674,25 +692,25 @@ def area_update(areaId: int, area: schemas.AreaToAdd, db: Session):
     db.commit()
     db.query(models.AreaPoints).filter(models.AreaPoints.area_id == areaId).delete()
     db.commit()
-    areaPoints = []
+    aPoints = []
     i = 1
     for ap in area.areaPoints:
         db_points = models.AreaPoints(
             area_id=areaId,
             point_id=i,
-            latitude=ap.latitude,
-            longitude=ap.longitude
+            latitude=ap['latitude'],
+            longitude=ap['longitude']
         )
         db.add(db_points)
         db.commit()
         db.refresh(db_points)
         i += 1
-        areaPoints.append({
-            'longitude': ap.longitude,
-            'latitude': ap.latitude
+        aPoints.append({
+            'longitude': ap['longitude'],
+            'latitude': ap['latitude']
         })
     return {
         'id': areaId,
         'name': area.name,
-        'areaPoints': areaPoints
+        'areaPoints': aPoints
     }

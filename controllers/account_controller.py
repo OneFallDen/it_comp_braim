@@ -57,13 +57,6 @@ def update_acc(accountId: int, firstname: str, lastname: str, email: str, passwo
         get_account(accountId, db)
     except:
         raise HTTPException(status_code=404)
-    s = 0
-    try:
-        s = check_email(email, db)
-    except:
-        d = 1
-    if s > 0:
-        raise HTTPException(status_code=409)
     return acc_update(accountId, firstname, lastname, email, hashed_password, role, db)
 
 

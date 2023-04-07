@@ -47,7 +47,7 @@ async def get_account_info(accountId: int, db: Session = Depends(get_db), accoun
     return get_acc_info(accountId, db)
 
 
-@router.post('/accounts', tags=['account'])
+@router.post('/accounts', tags=['account'], status_code=201)
 async def add_account(user: schemas.AccountRegByAdmin, db: Session = Depends(get_db),
                       account: Union[models.Account, None] = Depends(get_current_account)):
     check_roles(account.role, ['ADMIN'])

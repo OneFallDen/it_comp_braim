@@ -18,22 +18,25 @@ def add_new_area(area: schemas.AreaToAdd, db: Session):
     # areaPoints содержит меньше трех точек
     if len(area.areaPoints) < 3:
         raise HTTPException(status_code=400)
-    long = area.areaPoints[0].longitude
+    long = area.areaPoints[0]['longitude']
     long_count = 0
-    lati = area.areaPoints[0].latitude
+    lati = area.areaPoints[0]['latitude']
     lati_count = 0
     for ap in area.areaPoints:
         if not ap:
             raise HTTPException(status_code=400)
-        if ap.longitude == long:
+        if ap['longitude'] == long:
             long_count += 1
-        if ap.latitude == lati:
+        if ap['latitude'] == lati:
             lati_count += 1
-        valid_location(ap.latitude, ap.longitude)
-        points.append((ap.longitude, ap.latitude))
+        valid_location(ap['latitude'], ap['longitude'])
+        points.append((ap['longitude'], ap['latitude']))
     # Новая зона имеет дубликаты точек
-    setarr = set(area.areaPoints)
-    if not len(area.areaPoints) == len(setarr):
+    sets = []
+    for a in area.areaPoints:
+        sets.append((a['latitude'], a['longitude']))
+    setarr = set(sets)
+    if not len(sets) == len(setarr):
         raise HTTPException(status_code=409)
     # Все точки лежат на одной прямой
     if len(area.areaPoints) == long_count:
@@ -49,8 +52,12 @@ def add_new_area(area: schemas.AreaToAdd, db: Session):
             points2 = [points[i], points[i + 1]]
         l = LineString(points2)
         f = s.crosses(l)
-        if f.bool():
-            raise HTTPException(status_code=400)
+        try:
+            if f.bool():
+                raise HTTPException(status_code=400)
+        except:
+            if bool(f):
+                raise HTTPException(status_code=400)
     d = 0
     exists_points = []
     try:
@@ -85,8 +92,12 @@ def add_new_area(area: schemas.AreaToAdd, db: Session):
                     points2 = [points[i], points[i + 1]]
                 l = LineString(points2)
                 f = s1.crosses(l)
-                if f.bool():
-                    raise HTTPException(status_code=400)
+                try:
+                    if f.bool():
+                        raise HTTPException(status_code=400)
+                except:
+                    if bool(f):
+                        raise HTTPException(status_code=400)
             exists_points.clear()
     # Зона с таким name уже существует
     x = 0
@@ -108,22 +119,25 @@ def update_area_by_id(areaId: int, area: schemas.AreaToAdd, db: Session):
     # areaPoints содержит меньше трех точек
     if len(area.areaPoints) < 3:
         raise HTTPException(status_code=400)
-    long = area.areaPoints[0].longitude
+    long = area.areaPoints[0]['longitude']
     long_count = 0
-    lati = area.areaPoints[0].latitude
+    lati = area.areaPoints[0]['latitude']
     lati_count = 0
     for ap in area.areaPoints:
         if not ap:
             raise HTTPException(status_code=400)
-        if ap.longitude == long:
+        if ap['longitude'] == long:
             long_count += 1
-        if ap.latitude == lati:
+        if ap['latitude'] == lati:
             lati_count += 1
-        valid_location(ap.latitude, ap.longitude)
-        points.append((ap.longitude, ap.latitude))
+        valid_location(ap['latitude'], ap['longitude'])
+        points.append((ap['longitude'], ap['latitude']))
     # Новая зона имеет дубликаты точек
-    setarr = set(area.areaPoints)
-    if not len(area.areaPoints) == len(setarr):
+    sets = []
+    for a in area.areaPoints:
+        sets.append((a['latitude'], a['longitude']))
+    setarr = set(sets)
+    if not len(sets) == len(setarr):
         raise HTTPException(status_code=409)
     # Все точки лежат на одной прямой
     if len(area.areaPoints) == long_count:
@@ -139,8 +153,12 @@ def update_area_by_id(areaId: int, area: schemas.AreaToAdd, db: Session):
             points2 = [points[i], points[i + 1]]
         l = LineString(points2)
         f = s.crosses(l)
-        if f.bool():
-            raise HTTPException(status_code=400)
+        try:
+            if f.bool():
+                raise HTTPException(status_code=400)
+        except:
+            if bool(f):
+                raise HTTPException(status_code=400)
     d = 0
     exists_points = []
     try:
@@ -175,8 +193,12 @@ def update_area_by_id(areaId: int, area: schemas.AreaToAdd, db: Session):
                     points2 = [points[i], points[i + 1]]
                 l = LineString(points2)
                 f = s1.crosses(l)
-                if f.bool():
-                    raise HTTPException(status_code=400)
+                try:
+                    if f.bool():
+                        raise HTTPException(status_code=400)
+                except:
+                    if bool(f):
+                        raise HTTPException(status_code=400)
             exists_points.clear()
     # Зона с таким name уже существует
     x = 0

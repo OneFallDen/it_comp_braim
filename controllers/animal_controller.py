@@ -3,7 +3,7 @@ from fastapi import HTTPException
 
 from sql.crud import get_animal, get_type, anim_search, check_type, add_type, type_update, delete_type, \
     check_animal_type, get_account, get_location, add_anim, get_animal_status, update_anim, last_visit_point, \
-    delete_anim, check_exsists_type_animal, update_anim_types, type_from_anim_delete
+    delete_anim, check_exsists_type_animal, update_anim_types, type_from_anim_delete, add_anim_type
 from sql import models
 
 
@@ -109,6 +109,7 @@ def type_to_animal_add(animalId: int, typeId: int, user: models.Account, db: Ses
         pass
     if s > 0:
         raise HTTPException(status_code=409)
+    add_anim_type(animalId, typeId, db)
     return get_animal(animalId, db)
 
 

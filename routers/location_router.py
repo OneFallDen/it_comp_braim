@@ -61,7 +61,7 @@ async def add_location(location: schemas.Location, user: models.Account = Depend
 async def delete_location(pointId: int, user: models.Account = Depends(get_current_account),
                        db: Session = Depends(get_db)):
     check_roles(user.role, ['ADMIN'])
-    return location_delete(pointId, user, db)
+    return location_delete(pointId, db)
 
 
 @router.put('/locations/{pointId}', tags=['location'])
