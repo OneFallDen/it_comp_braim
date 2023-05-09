@@ -501,46 +501,25 @@ def last_visit_point(animalId: int, db: Session):
 
 
 def loc_search(animalId: int, startDateTime, endDateTime, froom, size, db: Session):
-    result = db.execute(select(models.VisitedLocations).order_by(models.VisitedLocations.id)).scalars().all()
-    locs = []
+    datetime_comp = []
+    if startDateTime:
+        datetime_comp.append(
+            models.VisitedLocations.date_of_visit >= startDateTime
+        )
+    if endDateTime:
+        datetime_comp.append(
+            models.VisitedLocations.date_of_visit <= endDateTime
+        )
+    result = db.query(models.VisitedLocations).filter(models.VisitedLocations.animal_id == animalId,
+                                                    and_(*datetime_comp),)\
+        .order_by(models.VisitedLocations.date_of_visit).offset(froom+1).limit(size).all()
     locs_to_send = []
-    to_remove = []
-    i = 0
-    j = 0
     for res in result:
-        locs.append({
+        locs_to_send.append({
             'id': res.id,
             'dateTimeOfVisitLocationPoint': res.date_of_visit,
             'locationPointId': res.loc_id
         })
-    if startDateTime:
-        try:
-            for loc in locs:
-                if startDateTime > loc['dateTimeOfVisitLocationPoint']:
-                    to_remove.append(loc)
-            for tr in to_remove:
-                locs.remove(tr)
-            to_remove.clear()
-        except:
-            raise HTTPException(status_code=400)
-    if endDateTime:
-        try:
-            for loc in locs:
-                if endDateTime < loc['dateTimeOfVisitLocationPoint']:
-                    to_remove.append(loc)
-            for tr in to_remove:
-                locs.remove(tr)
-            to_remove.clear()
-        except:
-            raise HTTPException(status_code=400)
-    for loc in locs:
-        if j != froom:
-            j += 1
-        else:
-            if i == size:
-                break
-            locs_to_send.append(loc)
-            i += 1
     return locs_to_send
 
 
@@ -653,7 +632,7 @@ def area_update(areaId: int, area: schemas.AreaToAdd, db: Session):
     }
 
 
-def get_all_visits(startDate, endDate, db: Session):
+def get_all_visits(db: Session):
     result = db.execute(select(models.VisitedLocations).order_by(models.VisitedLocations.id)).scalars().all()
     return result
 

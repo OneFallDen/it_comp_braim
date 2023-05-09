@@ -129,7 +129,7 @@ def update_area_by_id(areaId: int, area: schemas.AreaToAdd, db: Session):
     lati_count = 0
     for ap in area.areaPoints:
         if not ap:
-            raise HTTPException(status_code=400)
+            raise HTTPException(status_code=400, detail='areaPoints содержит меньше трех точек')
         if ap['longitude'] == long:
             long_count += 1
         if ap['latitude'] == lati:
@@ -142,12 +142,12 @@ def update_area_by_id(areaId: int, area: schemas.AreaToAdd, db: Session):
         sets.append((a['latitude'], a['longitude']))
     setarr = set(sets)
     if not len(sets) == len(setarr):
-        raise HTTPException(status_code=409)
+        raise HTTPException(status_code=409, detail='Новая зона имеет дубликаты точек')
     # Все точки лежат на одной прямой
     if len(area.areaPoints) == long_count:
-        raise HTTPException(status_code=400)
+        raise HTTPException(status_code=400, detail='Все точки лежат на одной прямой')
     if len(area.areaPoints) == lati_count:
-        raise HTTPException(status_code=400)
+        raise HTTPException(status_code=400, detail='Все точки лежат на одной прямой')
     s = gpd.GeoSeries(Polygon(points))
     # Границы новой зоны пересекаются между собой
     for i in range(len(points)):
@@ -159,10 +159,10 @@ def update_area_by_id(areaId: int, area: schemas.AreaToAdd, db: Session):
         f = s.crosses(l)
         try:
             if f.bool():
-                raise HTTPException(status_code=400)
+                raise HTTPException(status_code=400, detail='Границы новой зоны пересекаются между собой')
         except:
             if bool(f):
-                raise HTTPException(status_code=400)
+                raise HTTPException(status_code=400, detail='Границы новой зоны пересекаются между собой')
     d = 0
     exists_points = []
     try:
@@ -172,38 +172,41 @@ def update_area_by_id(areaId: int, area: schemas.AreaToAdd, db: Session):
         pass
     if d > 0:
         for a in areas:
-            exists_area_points = get_area_points(a.id, db)
-            for eap in exists_area_points:
-                exists_points.append((eap.longitude, eap.latitude))
-            s1 = Polygon(exists_points)
-            s2 = Polygon(points)
-            # Зона, состоящая из таких точек, уже существует.
-            if len(exists_points) == len(points):
-                a_points = set(points)
-                b_points = set(exists_points)
-                if a_points == b_points:
-                    raise HTTPException(status_code=409)
-            # Граница новой зоны находятся внутри границ существующей зоны
-            if s1.covers(s2):
-                raise HTTPException(status_code=400)
-            # Границы существующей зоны находятся внутри границ новой зоны
-            if s2.covers(s1):
-                raise HTTPException(status_code=400)
-            # Границы новой зоны пересекают границы уже существующей зоны
-            for i in range(len(points)):
-                if i == (len(points) - 1):
-                    points2 = [points[i], points[0]]
-                else:
-                    points2 = [points[i], points[i + 1]]
-                l = LineString(points2)
-                f = s1.crosses(l)
-                try:
-                    if f.bool():
-                        raise HTTPException(status_code=400)
-                except:
-                    if bool(f):
-                        raise HTTPException(status_code=400)
-            exists_points.clear()
+            if a.id == areaId:
+                pass
+            else:
+                exists_area_points = get_area_points(a.id, db)
+                for eap in exists_area_points:
+                    exists_points.append((eap.longitude, eap.latitude))
+                s1 = Polygon(exists_points)
+                s2 = Polygon(points)
+                # Зона, состоящая из таких точек, уже существует
+                if len(exists_points) == len(points):
+                    a_points = set(points)
+                    b_points = set(exists_points)
+                    if a_points == b_points:
+                        raise HTTPException(status_code=409, detail='Зона, состоящая из таких точек, уже существует')
+                # Граница новой зоны находятся внутри границ существующей зоны
+                if s1.covers(s2):
+                    raise HTTPException(status_code=400, detail='Граница новой зоны находятся внутри границ существующей зоны')
+                # Границы существующей зоны находятся внутри границ новой зоны
+                if s2.covers(s1):
+                    raise HTTPException(status_code=400, detail='Границы существующей зоны находятся внутри границ новой зоны')
+                # Границы новой зоны пересекают границы уже существующей зоны
+                for i in range(len(points)):
+                    if i == (len(points) - 1):
+                        points2 = [points[i], points[0]]
+                    else:
+                        points2 = [points[i], points[i + 1]]
+                    l = LineString(points2)
+                    f = s1.crosses(l)
+                    try:
+                        if f.bool():
+                            raise HTTPException(status_code=400, detail='Границы новой зоны пересекают границы уже существующей зоны')
+                    except:
+                        if bool(f):
+                            raise HTTPException(status_code=400, detail='Границы новой зоны пересекают границы уже существующей зоны')
+                exists_points.clear()
     # Зона с таким name уже существует
     x = 0
     try:
@@ -212,7 +215,7 @@ def update_area_by_id(areaId: int, area: schemas.AreaToAdd, db: Session):
     except:
         pass
     if x > 0:
-        raise HTTPException(status_code=409)
+        raise HTTPException(status_code=409, detail='Зона с таким name уже существует')
     return area_update(areaId, area, db)
 
 
@@ -233,37 +236,45 @@ def delete_area_by_id(areaId: int, db: Session):
 
 
 def area_analytic(areaId: int, startDate, endDate, db: Session):
+    # Vars
     totalQuantityAnimals = 0
     totalAnimalsArrived = 0
     totalAnimalsGone = 0
     animalsAnalytics = []
+    points_in_area = []
+    animals_in_area = []
+    points = []
     c = False
     x = True
     sD = startDate.split('-')
     eD = endDate.split('-')
+    # Validate area
     valid_int(areaId)
+    # Validate dates
     if startDate > endDate:
         raise HTTPException(status_code=400)
+    # Try to get area by id
     try:
         get_area_by_id(areaId, db)
     except:
         raise HTTPException(status_code=404)
-    all_points = get_all_visits(startDate, endDate, db)
-    points_in_area = []
-    animals_in_area = []
+    # Get all visited points
+    all_points = get_all_visits(db)
+    # Get aree points
     area_points = get_area_point(areaId, db)
-    points = []
+    # Build s as area polygon
     for ap in area_points:
         points.append((ap.longitude, ap.latitude))
     s = gpd.GeoSeries(
         Polygon(points)
     )
+    # Get all animals that were in area between startDate and endDate
     for ap in all_points:
         loc = get_location(ap.loc_id, db)
         p = Point(loc['longitude'], loc['latitude'])
         if s.contains(p).bool():
             points_in_area.append(ap)
-            if not ap.animal_id in animals_in_area:
+            if not (ap.animal_id in animals_in_area):
                 animals_in_area.append(ap.animal_id)
     for a in animals_in_area:
         lp = last_visit_point(a, db)
